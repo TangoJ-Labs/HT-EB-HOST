@@ -1,0 +1,41 @@
+html, body {
+	height: 100%;
+	width: 80% !important;
+	margin: 0;
+	margin-left: 10%;
+	margin-right: 10%;
+	padding: 0;
+	color: #1A1A1A;
+	font-family: 'Quicksand', sans-serif;
+	font-size: 20px;
+	font-weight: 200;
+	text-align: center;
+	-webkit-font-smoothing: subpixel-antialiased;
+}
+.clear {
+  clear: both;
+}
+
+.header {
+	position: relative;
+	width: 100%;
+	text-align: center;
+}
+div {
+	margin-top: 50px;
+	margin-bottom: 50px;
+}
+.policy-text {
+	position: relative;
+	width: 100%;
+	font-size: 14px;
+	font-weight: 200;
+	text-align: left;
+}
+.link {
+	position: relative;
+	width: 100%;
+	text-align: center;
+	cursor: pointer;
+	color: #1A1A1A;
+}

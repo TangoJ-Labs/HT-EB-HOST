@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block title %}Server Error{% endblock %}
+{% block css %}
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300|Quicksand:300,400' rel='stylesheet' type='text/css'>
+  {% assets "error_css" %}
+    <link type="text/css" rel="stylesheet" href="{{ ASSET_URL }}">
+  {% endassets %}
+{% endblock %}
+{% block body %}
+  <h1 class="header">Zzzzzz</h1>
+  <p class="paragraph">Hmmm. Either the server is napping, or it drank some decaf coffee.
+  <p class="paragraph">Try to check out the <a class="link" href="{{ url_for('root') }}">support page</a>.
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block title %}Privacy Policy{% endblock %}
+{% block css %}
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300|Quicksand:300,400' rel='stylesheet' type='text/css'>
+  {% assets "policy_css" %}
+    <link type="text/css" rel="stylesheet" href="{{ ASSET_URL }}">
+  {% endassets %}
+{% endblock %}
+{% block body %}
+  <h1 class="header">Privacy Policy</h1>
+  <div id="policy-text" class="policy-text">
+    </br></br>Last updated: (9/6/17)
+    </br></br>TangoJ Labs, LLC ("us", "we", or "our") operates Harveytown App (the "App"). This page informs you of our policies regarding the collection, use and disclosure of Personal Information we receive from users of the App.
+    </br></br>We use your Personal Information for functionality and improvement of the App. By using the App, you agree to the collection and use of information in accordance with this policy.
+    </br></br></br>INFORMATION COLLETION AND USE
+    </br></br>While using our App, we may ask you to provide us with certain personally identifiable information that can be used to contact or identify you. Personally identifiable information may include, but is not limited to your name, email address, uploaded images, and location ("Personal Information").
+    </br></br></br>LOG DATA
+    </br></br>Like many App operators, we collect information that your device sends whenever you visit our App ("Log Data"). This Log Data may include information such as your device&rsquo;s Internet Protocol ("IP") address, the time and date of your visit, the time spent on those pages and other statistics.
+    </br></br></br>SECURITY
+    </br></br>The security of your Personal Information is important to us, but remember that no method of transmission over the Internet, or method of electronic storage, is 100% secure. While we strive to use commercially acceptable means to protect your Personal Information, we cannot guarantee its absolute security.
+    </br></br></br>CHANGES TO THIS PRIVACY POLICY
+    </br></br>This Privacy Policy is effective as of 9/6/17 and will remain in effect except with respect to any changes in its provisions in the future, which will be in effect immediately after being posted on this page.
+    </br></br>We reserve the right to update or change our Privacy Policy at any time and you should check this Privacy Policy periodically. Your continued use of the Service after we post any modifications to the Privacy Policy on this page will constitute your acknowledgment of the modifications and your consent to abide and be bound by the modified Privacy Policy.
+    </br></br>If we make any material changes to this Privacy Policy, we will notify you either through the email address you have provided us, or by placing a prominent notice on our website.
+  </div>
+  <p class="policy-text">CONTACT INFORMATION
+  </br></br>If you have any questions about this Privacy Policy, please contact us at <a class="link" href="mailto:legal@tangojlabs.com">legal@tangojlabs.com</a>.</p>
+
+  <div class="paragraph">Check out the <a class="link" href="{{ url_for('about') }}">About page</a>.</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block title %}Forbidden{% endblock %}
+{% block css %}
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300|Quicksand:300,400' rel='stylesheet' type='text/css'>
+  {% assets "error_css" %}
+    <link type="text/css" rel="stylesheet" href="{{ ASSET_URL }}">
+  {% endassets %}
+{% endblock %}
+{% block body %}
+  <h1 class="header">Locked Door</h1>
+  <p class="paragraph">Whoa there! You need permission for that.
+  <p class="paragraph"><a class="link" href="mailto:admin@tangojlabs.com">Contact us</a> if you think this is a mistake.
+  <p class="paragraph">Check out the <a class="link" href="{{ url_for('root') }}">support page</a>.
+{% endblock %}

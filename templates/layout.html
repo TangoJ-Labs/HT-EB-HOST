@@ -1,0 +1,51 @@
+{% import "script_analytics.html" as script_analytics %}
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+	<head lang="en">
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="keywords" content="{{ refs.meta_keywords }}" />
+		<meta name="description" content="{{ refs.meta_description }}" />
+		<!-- <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' /> -->
+		<meta name='viewport' content='initial-scale=1.0' />
+		<meta property="og:title" content="Harveytown" />
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://www.harveytown.org" />
+		<meta property="og:image" content="{{ refs.meta_image }}" />
+		<meta property="og:description" content="{{ refs.meta_description }}" />
+		<meta property="fb:app_id" content="{{ refs['fb_app_id'] }}" />
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:site" content="@harveytown">
+		<meta name="twitter:creator" content="@harveytown">
+		<meta name="twitter:title" content="Harveytown">
+		<meta name="twitter:description" content="{{ refs.meta_description }}">
+		<meta name="twitter:image" content="{{ refs.meta_image }}">
+
+		<title>Harveytown-{% block title %}{% endblock %}</title>
+		<link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.ico') }}" />
+		<!-- <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png') }}"> -->
+		<!-- <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png') }}"> -->
+		<!-- <link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', filename='img/favicon-96x96.png') }}"> -->
+		<link rel="apple-touch-icon" type="image/png" href="{{ url_for('static', filename='img/apple-icon-120x120.png') }}"> <!-- 120px -->
+		<link rel="apple-touch-icon" type="image/png" sizes="57x57" href="{{ url_for('static', filename='img/apple-icon-57x57.png') }}">
+		<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="{{ url_for('static', filename='img/apple-icon-60x60.png') }}">
+		<link rel="apple-touch-icon" type="image/png" sizes="72x72" href="{{ url_for('static', filename='img/apple-icon-72x72.png') }}">
+		<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="{{ url_for('static', filename='img/apple-icon-76x76.png') }}">
+		<link rel="apple-touch-icon" type="image/png" sizes="114x114" href="{{ url_for('static', filename='img/apple-icon-114x114.png') }}">
+		<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="{{ url_for('static', filename='img/apple-icon-120x120.png') }}">
+		<link rel="apple-touch-icon" type="image/png" sizes="144x144" href="{{ url_for('static', filename='img/apple-icon-144x144.png') }}">
+		<link rel="apple-touch-icon" type="image/png" sizes="152x152" href="{{ url_for('static', filename='img/apple-icon-152x152.png') }}">
+		<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="{{ url_for('static', filename='img/apple-icon-180x180.png') }}">
+		<!--[if IE]>
+		<script type="text/javascript" src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+		{% block css %}{% endblock %}
+		{% block js %}{% endblock %}
+		{% if refs.app_stage == 'prod': %}
+			{{ script_analytics }}
+		{% endif %}
+	</head>
+	<body>
+    {% block body %}{% endblock %}
+	</body>
+</html>

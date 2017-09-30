@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block title %}Page Not Found{% endblock %}
+{% block css %}
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300|Quicksand:300,400' rel='stylesheet' type='text/css'>
+  {% assets "error_css" %}
+    <link type="text/css" rel="stylesheet" href="{{ ASSET_URL }}">
+  {% endassets %}
+{% endblock %}
+{% block body %}
+  <h1 class="header">Page Not Found</h1>
+  <p class="paragraph">I looked everywhere, but I can't find that!
+  <p class="paragraph">Check out the <a class="link" href="{{ url_for('root') }}">support page</a>.
+{% endblock %}

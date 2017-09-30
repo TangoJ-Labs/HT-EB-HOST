@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+{% block title %}Admin{% endblock %}
+{% block css %}
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
+  {% assets "admin_monitor_css" %}
+    <link type="text/css" rel="stylesheet" href="{{ ASSET_URL }}">
+  {% endassets %}
+{% endblock %}
+{% block js %}
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  {% assets "admin_monitor_js" %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+  {% endassets %}
+  <script type="text/javascript">
+    passRefs({{ refs|tojson }});
+  </script>
+{% endblock %}
+{% block body %}
+  <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId            : '1445404302175379',
+        autoLogAppEvents : true,
+        xfbml            : true,
+        version          : 'v2.10'
+      });
+      FB.AppEvents.logPageView();
+
+      FB.getLoginStatus(function(response) {
+        if (response.status === 'connected') {
+          console.log('Logged in.');
+          console.log(response.authResponse.accessToken);
+        }
+        else {
+          FB.login();
+        }
+      });
+    };
+
+    (function(d, s, id){
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "//connect.facebook.net/en_US/sdk.js";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));
+  </script>
+  <div id="container-all">
+    {% for s_content in spot_content %}
+      <div class="content-container" id="content-container-{{ s_content['content_id'] }}">
+        <div class="content">
+          <span class="content-title-box">
+            <div class="content-datetime">{{ s_content['timestamp'] }}</div> <!-- JUST SEND THE RAW TIMESTAMP - JS WILL CONVERT TO LOCAL BROWSER TIME -->
+            <div class="content-coords">{{ (s_content['lat'] * 1000000)|round / 1000000 }}, {{ (s_content['lng'] * 1000000)|round / 1000000 }}</div>
+          </span>
+          <span class="content-button content-button-release" id="content-button-release-{{ s_content['content_id'] }}" data-button-type="release" data-content-id="{{ s_content['content_id'] }}">RELEASE</span>
+          <span class="content-button content-button-delete" data-button-type="delete" data-content-id="{{ s_content['content_id'] }}">DELETE</span>
+          <div class="content-image-box">
+            <img border="0" src="data:;base64,{{ s_content['image'] }}" class="content-image">
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
