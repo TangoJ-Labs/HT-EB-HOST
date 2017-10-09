@@ -38,6 +38,12 @@ from app.ht_app_route import bp_test \
   , bp_app_user_connection_put \
   , bp_app_skill_query \
   , bp_app_skill_put \
+  , bp_app_structure_query \
+  , bp_app_structure_put \
+  , bp_app_structure_user_query \
+  , bp_app_structure_user_put \
+  , bp_app_repair_query \
+  , bp_app_repair_put \
   , bp_app_spot_query_active \
   , bp_app_spot_put \
   , bp_app_spot_content_status_update \
@@ -63,6 +69,12 @@ application.register_blueprint(bp_app_user_connection_query)
 application.register_blueprint(bp_app_user_connection_put)
 application.register_blueprint(bp_app_skill_query)
 application.register_blueprint(bp_app_skill_put)
+application.register_blueprint(bp_app_structure_query)
+application.register_blueprint(bp_app_structure_put)
+application.register_blueprint(bp_app_structure_user_query)
+application.register_blueprint(bp_app_structure_user_put)
+application.register_blueprint(bp_app_repair_query)
+application.register_blueprint(bp_app_repair_put)
 application.register_blueprint(bp_app_spot_query_active)
 application.register_blueprint(bp_app_spot_put)
 application.register_blueprint(bp_app_spot_content_status_update)

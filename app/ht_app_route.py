@@ -206,8 +206,10 @@ def app_structure_query():
   if 'app_version' in body:
     app_version_mod = body['app_version'].replace('.', '_')
     util = importlib.import_module('..v' + app_version_mod + '.ht_app_lib_util', 'app.subpkg')
-    response['structures'] = util.structure_query(body)
-    response['response'] = 'success'
+    query_response = util.structure_query(body)
+    if query_response['result'] == 'success':
+      response['structures'] = query_response['structures']
+      response['response'] = 'success'
   return jsonify(response)
 
 # UPDATE / PUT A STRUCTURE
@@ -224,6 +226,75 @@ def app_structure_put():
     util = importlib.import_module('..v' + app_version_mod + '.ht_app_lib_util', 'app.subpkg')
     structure_put_response = util.structure_put(body)
     if structure_put_response['response'] == 'success':
+      response['response'] = 'success'
+  return jsonify(response)
+
+# RETURN ALL STRUCTURE USERS FOR THE PASSED STRUCTURE OR USER, WHICHEVER WAS PASSED
+bp_app_structure_user_query = Blueprint('bp_app_structure_user_query', __name__)
+@bp_app_structure_user_query.route('/app/structure-user/query', methods=['POST'])
+def app_structure_user_query():
+  print("ROUTE: STRUCTURE-USER QUERY")
+  # Retrieve the POST json parameters
+  body = request.get_json(force=True)
+  # Prep the response and fire the appropriate version of the function
+  response = {'response' : 'failure'}
+  if 'app_version' in body:
+    app_version_mod = body['app_version'].replace('.', '_')
+    util = importlib.import_module('..v' + app_version_mod + '.ht_app_lib_util', 'app.subpkg')
+    response['structure_users'] = util.structure_user_query(body)
+    response['response'] = 'success'
+  return jsonify(response)
+
+# UPDATE / PUT A STRUCTURE-USER
+bp_app_structure_user_put = Blueprint('bp_app_structure_user_put', __name__)
+@bp_app_structure_user_put.route('/app/structure-user/put', methods=['POST'])
+def app_structure_user_put():
+  print("ROUTE: STRUCTURE-USER PUT")
+  # Retrieve the POST json parameters
+  body = request.get_json(force=True)
+  # Prep the response and fire the appropriate version of the function
+  response = {'response' : 'failure'}
+  if 'app_version' in body:
+    app_version_mod = body['app_version'].replace('.', '_')
+    util = importlib.import_module('..v' + app_version_mod + '.ht_app_lib_util', 'app.subpkg')
+    structure_user_put_response = util.structure_user_put(body)
+    if structure_user_put_response['response'] == 'success':
+      response['response'] = 'success'
+  return jsonify(response)
+
+# RETURN ALL REPAIRS FOR THE PASSED STRUCTURE ID
+bp_app_repair_query = Blueprint('bp_app_repair_query', __name__)
+@bp_app_repair_query.route('/app/repair/query', methods=['POST'])
+def app_repair_query():
+  print("ROUTE: REPAIR QUERY")
+  # Retrieve the POST json parameters
+  body = request.get_json(force=True)
+  # Prep the response and fire the appropriate version of the function
+  response = {'response' : 'failure'}
+  if 'app_version' in body:
+    app_version_mod = body['app_version'].replace('.', '_')
+    util = importlib.import_module('..v' + app_version_mod + '.ht_app_lib_util', 'app.subpkg')
+    query_response = util.repair_query(body)
+    if query_response['result'] == 'success':
+      response['repairs'] = query_response['repairs']
+      response['repair_settings'] = ht_references.repair_list
+      response['response'] = 'success'
+  return jsonify(response)
+
+# UPDATE / PUT A REPAIR
+bp_app_repair_put = Blueprint('bp_app_repair_put', __name__)
+@bp_app_repair_put.route('/app/repair/put', methods=['POST'])
+def app_repair_put():
+  print("ROUTE: REPAIR PUT")
+  # Retrieve the POST json parameters
+  body = request.get_json(force=True)
+  # Prep the response and fire the appropriate version of the function
+  response = {'response' : 'failure'}
+  if 'app_version' in body:
+    app_version_mod = body['app_version'].replace('.', '_')
+    util = importlib.import_module('..v' + app_version_mod + '.ht_app_lib_util', 'app.subpkg')
+    structure_user_put_response = util.repair_put(body)
+    if structure_user_put_response['response'] == 'success':
       response['response'] = 'success'
   return jsonify(response)
 

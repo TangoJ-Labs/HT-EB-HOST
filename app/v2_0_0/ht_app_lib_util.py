@@ -268,6 +268,7 @@ def user_connection_put(body):
       , 'user_id' : body['user_id']
       , 'target_user_id' : body['target_user_id']
       , 'connection' : body['connection']
+      , 'status' : 'active'
     }
   )
   if user_conn_response['ResponseMetadata']['HTTPStatusCode'] == 200:
@@ -328,11 +329,11 @@ def structure_query(body):
   # If a structure id was passed, only return the specific structure data, otherwise
   # return all active structure data
   table_structure = resource.Table(ht_references.table_structure_name)
-  if 'structure_id' in event:
+  if 'structure_id' in body:
     # Recall the Structure data
     structure_response = table_structure.query(
       TableName=ht_references.table_structure_name
-      , KeyConditionExpression=Key('structure_id').eq(event['structure_id'])
+      , KeyConditionExpression=Key('structure_id').eq(body['structure_id'])
     )
   else:
     # Recall all active Structure data
@@ -351,13 +352,15 @@ def structure_put(body):
   resource = ht_lib_admin.get_resource_with_credentials(body['identity_id'], body['login_provider'], body['login_token'], 'dynamodb', 'us-east-1')
   # Create a default response
   response = {'response' : 'failure'}
+  # Create data for the structure table
   structure_data = {
     'structure_id' : body['structure_id']
-    , 'user_id' : body['user_id']
+    , 'timestamp' : Decimal(body['timestamp'])
     , 'lat' : Decimal(body['lat'])
     , 'lng' : Decimal(body['lng'])
     , 'type' : Decimal(body['type'])
-    , 'status' : body['status']
+    , 'stage' : Decimal(body['stage'])
+    , 'status' : 'active'
   }
   # Create or update the current structure entry with the updated data
   table_structure = resource.Table(ht_references.table_structure_name)
@@ -367,23 +370,100 @@ def structure_put(body):
   )
   if put_structure_response['ResponseMetadata']['HTTPStatusCode'] == 200:
     response['response'] = 'success'
+    # Now add all repair entries for this structure with default stages for each
+    for repair in ht_references.repair_list:
+      repair_body = {
+        'identity_id' : body['identity_id']
+        , 'login_provider' : body['login_provider']
+        , 'login_token' : body['login_token']
+        , 'structure_id' : body['structure_id']
+        , 'repair' : repair
+        , 'stage' : Decimal(0)
+        , 'timestamp' : body['timestamp']
+        , 'status' : 'active'
+      }
+      repair_response = repair_put(repair_body)
+      if repair_response['response'] == 'failure':
+        response['response'] = 'failure'
+  return response
+
+def structure_user_query(body):
+  # Create the boto3 resource object with the passed credentials
+  resource = ht_lib_admin.get_resource_with_credentials(body['identity_id'], body['login_provider'], body['login_token'], 'dynamodb', 'us-east-1')
+  # If a structure id was passed, only return the specific structure data, otherwise
+  # return all active structure-user data
+  found_structure_users = []
+  table_structure_user = resource.Table(ht_references.table_structure_user_name)
+  if 'structure_id' in body:
+    # Recall the Structure data
+    structure_user_response = table_structure_user.query(
+      TableName=ht_references.table_structure_user_name
+      , IndexName=ht_references.table_structure_user_index_structure
+      , KeyConditionExpression=Key('structure_id').eq(body['structure_id'])
+    )
+    found_structure_users = structure_user_response['Items']
+  elif 'user_id' in body:
+    # Recall the Structure data
+    structure_user_response = table_structure_user.query(
+      TableName=ht_references.table_structure_user_name
+      , IndexName=ht_references.table_structure_user_index_user
+      , KeyConditionExpression=Key('user_id').eq(body['user_id'])
+    )
+    found_structure_users = structure_user_response['Items']
+  return found_structure_users
+
+def structure_user_put(body):
+  # Create the boto3 resource object with the passed credentials
+  resource = ht_lib_admin.get_resource_with_credentials(body['identity_id'], body['login_provider'], body['login_token'], 'dynamodb', 'us-east-1')
+  # Create a default response
+  response = {'response' : 'failure'}
+  structure_user_data = {
+    'structure_user_id' : body['structure_user_id']
+    , 'structure_id' : body['structure_id']
+    , 'user_id' : body['user_id']
+    , 'timestamp' : Decimal(body['timestamp'])
+    , 'status' : 'active'
+  }
+  # Create or update the current structure-user entry with the updated data
+  table_structure_user = resource.Table(ht_references.table_structure_user_name)
+  put_structure_user_response = table_structure_user.put_item(
+    TableName=ht_references.table_structure_user_name,
+    Item=structure_user_data
+  )
+  if put_structure_user_response['ResponseMetadata']['HTTPStatusCode'] == 200:
+    response['response'] = 'success'
+  return response
 
 def repair_query(body):
   # Create the boto3 resource object with the passed credentials
   resource = ht_lib_admin.get_resource_with_credentials(body['identity_id'], body['login_provider'], body['login_token'], 'dynamodb', 'us-east-1')
   # Create a default response
   response = {'response' : 'failure'}
+  repairs = []
   # If a structure id was passed, only return the specific structure data, otherwise
   # return all active repairs for the passed structure data
   table_repair = resource.Table(ht_references.table_repair_name)
+  table_repair_image = resource.Table(ht_references.table_repair_image_name)
   repair_response = table_repair.query(
     TableName=ht_references.table_repair_name
     , IndexName=ht_references.table_repair_index
     , KeyConditionExpression=Key('structure_id').eq(body['structure_id'])
   )
-  if len(repair_response['Items']) > 0:
-    response['result'] = 'success'
-    response['repairs'] = repair_response['Items']
+  for repair in repair_response['Items']:
+    repair_image_response = table_repair_image.query(
+      TableName=ht_references.table_repair_image_name
+      , IndexName=ht_references.table_repair_image_index
+      , KeyConditionExpression=Key('repair_id').eq(repair['repair_id'])
+    )
+    repair_images_active = []
+    for repair_image in repair_image_response['Items']:
+      if repair_image['status'] == 'active':
+        repair_images_active.append(repair_image)
+    repair['repair_images'] = repair_images_active
+    repairs.append(repair)
+  # if len(repair_response['Items']) > 0:
+  response['result'] = 'success'
+  response['repairs'] = repairs
   return response
 
 def repair_put(body):
@@ -391,20 +471,70 @@ def repair_put(body):
   resource = ht_lib_admin.get_resource_with_credentials(body['identity_id'], body['login_provider'], body['login_token'], 'dynamodb', 'us-east-1')
   # Create a default response
   response = {'response' : 'failure'}
+  # Pull the existing repair - the original timestamp is needed to overwrite original
+  table_repair = resource.Table(ht_references.table_repair_name)
+  original_timestamp = Decimal(body['timestamp'])
+  repair_response = table_repair.query(
+    TableName=ht_references.table_repair_name
+    , KeyConditionExpression=Key('repair_id').eq(body['structure_id'] + "-" + body['repair'])
+  )
+  if len(repair_response['Items']) > 0:
+    original_timestamp = repair_response['Items'][0]['timestamp']
   repair_data = {
-    'structure_id' : body['structure_id']
-    , 'user_id' : body['user_id']
-    , 'lat' : Decimal(body['lat'])
-    , 'lng' : Decimal(body['lng'])
-    , 'type' : Decimal(body['type'])
+    'repair_id' : body['structure_id'] + "-" + body['repair']
+    , 'structure_id' : body['structure_id']
+    , 'repair' : body['repair']
+    , 'stage' : Decimal(body['stage'])
+    , 'timestamp' : original_timestamp
     , 'status' : body['status']
   }
   # Create or update the repair entry with the updated data
-  table_repair = resource.Table(ht_references.table_repair_name)
-  put_structure_response = table_repair.put_item(
+  put_repair_response = table_repair.put_item(
     TableName=ht_references.table_repair_name,
     Item=repair_data
   )
-  if put_structure_response['ResponseMetadata']['HTTPStatusCode'] == 200:
+  # If new repair images are uploaded, change all old images to inactive
+  repair_image_response = 'success'
+  if body['updated_images'] == 1:
+    # First change all active repair images to inactive
+    table_repair_image = resource.Table(ht_references.table_repair_image_name)
+    repair_response = table_repair_image.query(
+      TableName=ht_references.table_repair_image_name
+      , IndexName=ht_references.table_repair_image_index
+    #   , KeyConditionExpression=Key('status').eq('active')
+      , KeyConditionExpression=Key('repair_id').eq(body['structure_id'] + "-" + body['repair'])
+    )
+    for repair_image in repair_response['Items']:
+      if repair_image['status'] == 'active':
+        repair_image_data = {
+          'image_id' : repair_image['image_id']
+          , 'repair_id' : repair_image['repair_id']
+          , 'timestamp' : Decimal(repair_image['timestamp'])
+          , 'status' : 'inactive'
+        }
+        put_repair_image_response = table_repair_image.put_item(
+          TableName=ht_references.table_repair_image_name,
+          Item=repair_image_data
+        )
+        if put_repair_image_response['ResponseMetadata']['HTTPStatusCode'] != 200:
+          repair_image_response = 'failure'
+
+    # Loop through the updated / new repair images and add the data to the RepairImage db
+    for repair_image in body['repair_images']:
+      repair_image_data = {
+        'image_id' : repair_image['image_id']
+        , 'repair_id' : repair_image['repair_id']
+        , 'timestamp' : Decimal(repair_image['timestamp'])
+        , 'status' : repair_image['status']
+      }
+      put_repair_image_response = table_repair_image.put_item(
+        TableName=ht_references.table_repair_image_name,
+        Item=repair_image_data
+      )
+      if put_repair_image_response['ResponseMetadata']['HTTPStatusCode'] != 200:
+        repair_image_response = 'failure'
+        print(repair_image_response)
+  if put_repair_response['ResponseMetadata']['HTTPStatusCode'] == 200 and repair_image_response == 'success':
     response['response'] = 'success'
+  print(response)
   return response
