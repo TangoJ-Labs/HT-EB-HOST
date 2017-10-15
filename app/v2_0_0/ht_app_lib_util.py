@@ -17,6 +17,7 @@ import json
 import random
 import string
 import time
+import urllib2
 
 # Import Harvey libraries
 import ht_references
@@ -226,8 +227,13 @@ def user_query_active(body):
     , IndexName=ht_references.table_user_index
     , KeyConditionExpression=Key('status').eq('active')
   )
-  if len(user_response['Items']) > 0:
-    response = user_response['Items']
+  # if len(user_response['Items']) > 0:
+  #   response = user_response['Items']
+  for user in user_response['Items']:
+    # fb_profile_response = urllib2.urlopen('https://www.facebook.com/app_scoped_user_id/' + user['facebook_id'])
+    # print("USER GET URL:")
+    # print(fb_profile_response.geturl())
+    response.append(user)
   return response
 
 def user_connection_query(body):
@@ -325,7 +331,7 @@ def structure_query(body):
   # Create the boto3 resource object with the passed credentials
   resource = ht_lib_admin.get_resource_with_credentials(body['identity_id'], body['login_provider'], body['login_token'], 'dynamodb', 'us-east-1')
   # Create a default response
-  response = {'response' : 'failure'}
+  response = {'result' : 'failure'}
   # If a structure id was passed, only return the specific structure data, otherwise
   # return all active structure data
   table_structure = resource.Table(ht_references.table_structure_name)
@@ -344,7 +350,21 @@ def structure_query(body):
     )
   if len(structure_response['Items']) > 0:
     response['result'] = 'success'
-  response['structures'] = structure_response['Items']
+    structure_dict = []
+    for structure in structure_response['Items']:
+      structure_user_body = {
+        'identity_id' : body['identity_id']
+        , 'login_provider' : body['login_provider']
+        , 'login_token' : body['login_token']
+        , 'structure_id' : structure['structure_id']
+      }
+      structure_user_response = structure_user_query(structure_user_body)
+      if len(structure_user_response) == 0:
+        response['result'] = 'failure'
+      else:
+        structure['users'] = structure_user_response
+        structure_dict.append(structure)
+    response['structures'] = structure_dict
   return response
 
 def structure_put(body):
@@ -360,6 +380,7 @@ def structure_put(body):
     , 'lng' : Decimal(body['lng'])
     , 'type' : Decimal(body['type'])
     , 'stage' : Decimal(body['stage'])
+    , 'image_id' : body['image_id']
     , 'status' : 'active'
   }
   # Create or update the current structure entry with the updated data
@@ -380,6 +401,7 @@ def structure_put(body):
         , 'repair' : repair
         , 'stage' : Decimal(0)
         , 'timestamp' : body['timestamp']
+        , 'updated_images' : Decimal(0)
         , 'status' : 'active'
       }
       repair_response = repair_put(repair_body)

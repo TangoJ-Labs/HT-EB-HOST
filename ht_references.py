@@ -101,43 +101,43 @@ table_shelter_index = 'status-index'
 table_hydrologic_index = 'gauge_id-status-index'
 
 skill_list = {
-  'mucking' : 1
-  , 'electrical' : 2
-  , 'plumbing' : 3
-  , 'framing' : 4
-  , 'concrete' : 5
-  , 'sheetrock' : 6
-  , 'texturing' : 7
-  , 'painting' : 8
-  , 'tiling' : 9
-  , 'cabinetry' : 10
-  , 'roofing' : 11
-  , 'fencing' : 12
-  , 'windows' : 13
-  , 'fixtures' : 14
-  , 'appliances' : 15
-  , 'landscaping' : 16
-  , 'general woodworking' : 17
-  , 'heavy lifting' : 18
+  'mucking' : {'order':1, 'image':'mucking.png'}
+  , 'electrical' : {'order':2, 'image':'electrical.png'}
+  , 'plumbing' : {'order':3, 'image':'plumbing.png'}
+  , 'framing' : {'order':4, 'image':'framing.png'}
+  , 'concrete' : {'order':5, 'image':'concrete.png'}
+  , 'sheetrock' : {'order':6, 'image':'sheetrock.png'}
+  , 'texturing' : {'order':7, 'image':'texturing.png'}
+  , 'painting' : {'order':8, 'image':'painting.png'}
+  , 'tiling' : {'order':9, 'image':'tile.png'}
+  , 'cabinetry' : {'order':10, 'image':'cabinetry.png'}
+  , 'roofing' : {'order':11, 'image':'roof.png'}
+  , 'fencing' : {'order':12, 'image':'fence.png'}
+  , 'windows' : {'order':13, 'image':'window.png'}
+  , 'fixtures' : {'order':14, 'image':'fixture.png'}
+  , 'appliances' : {'order':15, 'image':'appliance.png'}
+  , 'landscaping' : {'order':16, 'image':'landscaping.png'}
+  , 'general woodworking' : {'order':17, 'image':'Harvey.png'}
+  , 'heavy lifting' : {'order':18, 'image':'Harvey.png'}
 }
 repair_list = {
-  'mucking' : 1
-  , 'electrical replacement' : 2
-  , 'plumbing patching' : 3
-  , 'framing repair' : 4
-  , 'concrete patching' : 5
-  , 'sheetrock replacement' : 6
-  , 'sheetrock texturing' : 7
-  , 'interior painting' : 8
-  , 'tile laying' : 9
-  , 'cabinetry installation' : 10
-  , 'roof repair' : 11
-  , 'fence construction' : 12
-  , 'window installation' : 13
-  , 'exterior painting' : 14
-  , 'fixture installation' : 15
-  , 'appliance repair / installation' : 16
-  , 'landscaping' : 17
+  'mucking' : {'order':1, 'image':'mucking.png'}
+  , 'electrical replacement' : {'order':2, 'image':'electrical.png'}
+  , 'plumbing patching' : {'order':3, 'image':'plumbing.png'}
+  , 'framing repair' : {'order':4, 'image':'framing.png'}
+  , 'concrete patching' : {'order':5, 'image':'concrete.png'}
+  , 'sheetrock replacement' : {'order':6, 'image':'sheetrock.png'}
+  , 'sheetrock texturing' : {'order':7, 'image':'texturing.png'}
+  , 'interior painting' : {'order':8, 'image':'painting.png'}
+  , 'tile laying' : {'order':9, 'image':'tile.png'}
+  , 'cabinetry installation' : {'order':10, 'image':'cabinetry.png'}
+  , 'roof repair' : {'order':11, 'image':'roof.png'}
+  , 'fence construction' : {'order':12, 'image':'fence.png'}
+  , 'window installation' : {'order':13, 'image':'window.png'}
+  , 'exterior painting' : {'order':14, 'image':'painting.png'}
+  , 'fixture installation' : {'order':15, 'image':'fixture.png'}
+  , 'appliance repair or installation' : {'order':16, 'image':'appliance.png'}
+  , 'landscaping' : {'order':17, 'image':'landscaping.png'}
 }
 
 # FLASK ASSET BUNDLES FOR REFERENCE & MINIFICATION
