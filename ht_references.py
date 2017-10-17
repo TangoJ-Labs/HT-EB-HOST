@@ -152,6 +152,16 @@ bundles = {
         output='gen/index-min.css',
         filters='cssmin'),
 
+    'map_js': Bundle(
+        'js/map.js',
+        output='gen/map-min.js',
+        filters='jsmin'),
+
+    'map_css': Bundle(
+        'css/map.css',
+        output='gen/map-min.css',
+        filters='cssmin'),
+
     'error_css': Bundle(
         'css/error.css',
         output='gen/error-min.css',

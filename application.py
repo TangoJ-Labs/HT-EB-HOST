@@ -114,6 +114,16 @@ def root():
   # )
   return render_template('index.html', refs=ht_references.refs)
 
+@application.route('/map')
+# Return the map page
+def map():
+  print("ROUTE: MAP")
+  timestamp_begin = 0
+  # Return all active Spots later than the passed timestamp (begin)
+  spots = ht_lib_admin.spot_active(timestamp_begin)
+  print(spots)
+  return render_template('map.html', refs=ht_references.refs, spots=spots)
+
 @application.route('/tos')
 @application.route('/tos.html')
 # Return the terms of service page
@@ -202,8 +212,8 @@ def data_grabs():
   timestamp_begin = request.json['timestamp_begin']
 
   # Return all active Spots later than the passed timestamp (begin)
-  grabs = ht_lib_admin.spot_active(timestamp_begin)
-  return json.dumps(grabs_filtered_sites, default=ht_utility.decimal_default)
+  spots = ht_lib_admin.spot_active(timestamp_begin)
+  return json.dumps(spots, default=ht_utility.decimal_default)
 
 # ENDPOINT TO PASS ADMIN SPOT CONTENT MODIFICATION COMMANDS
 @application.route('/' + ht_references.route_admin_update_spot_content, methods=['POST'])

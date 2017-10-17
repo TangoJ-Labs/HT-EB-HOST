@@ -1,0 +1,43 @@
+html, body {
+	height: 100%;
+	width: 100% !important;
+	margin: 0;
+	padding: 0;
+	font-family: 'Open Sans Condensed', sans-serif;
+	/*font-family: 'Lora', serif;*/
+	/*font-family: 'Dosis', sans-serif;*/
+	/*font-family: 'Rubik', sans-serif;*/
+	/*font-family: 'Quattrocento Sans', sans-serif;*/
+	/*font-family: 'Quattrocento', serif;*/
+	/*font-family: 'Economica', sans-serif;*/
+	font-size: 24px;
+	font-weight: 200;
+	-webkit-font-smoothing: subpixel-antialiased;
+}
+html {
+	overflow-y: scroll;
+	overflow-x: hidden;
+}
+.clear {
+  clear: both;
+}
+
+#everything {
+	position: relative;
+	display: block;
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	/*overflow-x: hidden;
+	overflow-y: hidden;*/
+}
+
+#map-container {
+	height: 100%;
+	width: 100%;
+}
+#map {
+	height: 100%;
+	width: 100%;
+}

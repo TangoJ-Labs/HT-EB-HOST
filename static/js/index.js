@@ -48,7 +48,7 @@ $(document).ready(function()
 
       screenshotHeight = (img_std_height / img_std_width) * screenWidth
     }
-    console.log($(".app-screenshot").width());
+    // console.log($(".app-screenshot").width());
 
     // screenshotHeight = $(".app-screenshot").height();
     $("#info-container").css('height', screenshotHeight + 250);
