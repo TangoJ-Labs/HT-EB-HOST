@@ -49,12 +49,11 @@
 			{% endassets %}
 		<!-- Script files -->
 			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+            <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALZxdVgCtAFhp2V4SvSQKgw8_sVOzBdQU&callback=initMap" async defer></script>
 			{% assets "map_js" %}
 				<script type="text/javascript" src="{{ ASSET_URL }}"></script>
 			{% endassets %}
-      <!-- <script type="text/javascript" src="{{ url_for('static',filename='gen/index.js') }}"></script> -->
-			<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALZxdVgCtAFhp2V4SvSQKgw8_sVOzBdQU&callback=initMap"
-	    async defer></script>
+            <!-- <script type="text/javascript" src="{{ url_for('static',filename='gen/index.js') }}"></script> -->
 			<script type="text/javascript">
 				passRefs({{ refs|tojson }});
 				passSpots({{ spots|tojson }});
@@ -64,10 +63,79 @@
 			{% endif %} -->
 	</head>
 	<body>
+    <div id="banner">
+      <div id="banner-container">
+        <div id="banner-text">APP ONLY: Add your damaged home or your volunteer skills.</div>
+        <a href="https://itunes.apple.com/us/app/harveytown/id1278667479" target="_blank"><img id="app-store-icon" border="0" src="img/app_store.svg"></a>
+      </div>
+    </div>
 		<div id="everything">
-			<div id="map-container">
-				<div id="map"></div>
+			<div id="menu">
+				<div class="menu-toggle-container" id="menu-toggle-container-traffic">
+					<div class="menu-toggle" id="menu-toggle-traffic"></div>
+					<div class="menu-toggle-check" id="menu-toggle-check-traffic"></div>
+				</div>
+				<div class="menu-toggle-container" id="menu-toggle-container-structures">
+					<div class="menu-toggle" id="menu-toggle-structures"></div>
+					<div class="menu-toggle-check" id="menu-toggle-check-structures"></div>
+				</div>
+				<div class="menu-toggle-container" id="menu-toggle-container-spots">
+					<div class="menu-toggle" id="menu-toggle-spots"></div>
+					<div class="menu-toggle-check" id="menu-toggle-check-spots"></div>
+				</div>
+				<div class="menu-toggle-container" id="menu-toggle-container-hazards">
+					<div class="menu-toggle" id="menu-toggle-hazards"></div>
+					<div class="menu-toggle-check" id="menu-toggle-check-hazards"></div>
+				</div>
+
+				<div id="menu-filter-container">
+					<div id="menu-filter-line"></div>
+					<div class="menu-filter-dot-container" id="menu-filter-dot-container-1">
+						<span class="menu-filter-dot" id="menu-filter-dot-1"></span>
+						<span class="menu-filter-text" id="menu-filter-text-1">Past Day</span>
+						<div class="menu-filter-check" id="menu-filter-check-1"></div>
+					</div>
+					<div class="menu-filter-dot-container" id="menu-filter-dot-container-2">
+						<span class="menu-filter-dot" id="menu-filter-dot-2"></span>
+						<span class="menu-filter-text" id="menu-filter-text-2">Past Week</span>
+						<div class="menu-filter-check" id="menu-filter-check-2"></div>
+					</div>
+					<div class="menu-filter-dot-container" id="menu-filter-dot-container-3">
+						<span class="menu-filter-dot" id="menu-filter-dot-3"></span>
+						<span class="menu-filter-text" id="menu-filter-text-3">Past Month</span>
+						<div class="menu-filter-check" id="menu-filter-check-3"></div>
+					</div>
+					<div class="menu-filter-dot-container" id="menu-filter-dot-container-4">
+						<span class="menu-filter-dot" id="menu-filter-dot-4"></span>
+						<span class="menu-filter-text" id="menu-filter-text-4">Past Year</span>
+						<div class="menu-filter-check" id="menu-filter-check-4"></div>
+					</div>
+				</div>
 			</div>
+			<div id="map-container">
+                <div id="map-loader"></div>
+				<div id="map"></div>
+				<div id="map-menu-button"></div>
+			</div>
+      <div class="data-container-all" id="spot-container-all">
+          <div class="data-container" id="spot-container"></div>
+          <div class="data-container-loader" id="spot-container-loader"></div>
+      </div>
+      <div class="data-container-all" id="structure-container-all">
+          <div class="data-container" id="structure-container">
+    				<div id="structure-image">
+              <div class="image-loader" id="structure-image-loader"></div>
+            </div>
+    				<div id="structure-user"></div>
+    				<div id="structure-repair-container"></div>
+            <div class="image-loader" id="structure-repair-loader"></div>
+    			</div>
+          <div class="data-container-sub" id="repair-container-sub">
+              <div class="repair-container" id="repair-container-sub-header"></div>
+              <div class="data-container" id="repair-image-container"></div>
+              <div class="data-container-loader" id="repair-container-loader"></div>
+          </div>
+      </div>
 		</div>
 	</body>
 </html>

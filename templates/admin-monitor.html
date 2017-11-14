@@ -56,7 +56,8 @@
           <span class="content-button content-button-release" id="content-button-release-{{ s_content['content_id'] }}" data-button-type="release" data-content-id="{{ s_content['content_id'] }}">RELEASE</span>
           <span class="content-button content-button-delete" data-button-type="delete" data-content-id="{{ s_content['content_id'] }}">DELETE</span>
           <div class="content-image-box">
-            <img border="0" src="data:;base64,{{ s_content['image'] }}" class="content-image">
+            <!-- <img border="0" src="data:;base64,{{ s_content['image'] }}" class="content-image"> -->
+            <img border="0" src="{{ s_content['image_url'] }}" class="content-image">
           </div>
         </div>
       </div>

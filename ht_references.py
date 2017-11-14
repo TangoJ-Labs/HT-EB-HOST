@@ -8,11 +8,22 @@ app_stage = 'local' # prod, dev, local
 
 app_state_name = 'prod'
 app_debug = False
+
 ##### API ENDPOINT ROUTES #####
 # Remove the "/" from the beginning of the path
-route_data_spot = 'api/v0.1/data/spot'
-route_admin_update_spot_content = 'api/v0.1/admin/update/spot_content'
-# route_admin_logs = 'api/v0.1/admin/logs'
+route_api_app_settings = 'api/settings'
+route_api_image_data = 'api/image'
+route_api_skill_query = 'api/skill/query'
+route_api_structure_query = 'api/structure/query'
+route_api_structure_user_query = 'api/structure-user/query'
+route_api_repair_query = 'api/repair/query'
+route_api_spot_query_active = 'api/spot/query/active'
+route_api_spot_content_query = 'api/spot-content/query/active'
+route_api_hazard_query_active = 'api/hazard/query/active'
+route_api_shelter_query_active = 'api/shelter/query/active'
+route_api_hydro_query_active = 'api/hydro/query/active'
+route_api_admin_update_spot_content = 'api/v0.1/admin/update/spot_content'
+# route_api_admin_logs = 'api/v0.1/admin/logs'
 
 ##### ENDPOINT / URL SETTINGS #####
 # ENSURE THE NON-API URLs INCLUDE A SLASH AT THE END
@@ -28,8 +39,13 @@ elif app_stage == 'local':
 
 # folder_spot_image = 'https://s3.amazonaws.com/harvey-media/'
 folder_spot_image = 'harvey-media'
-endpoint_spots = domain + route_data_spot
-endpoint_admin_update_spot_content = domain + route_admin_update_spot_content
+endpoint_image_data = domain + route_api_image_data
+endpoint_spot_query_active = domain + route_api_spot_query_active
+endpoint_spot_content_query = domain + route_api_spot_content_query
+endpoint_hazard_query_active = domain + route_api_hazard_query_active
+endpoint_structure_query = domain + route_api_structure_query
+endpoint_repair_query = domain + route_api_repair_query
+endpoint_admin_update_spot_content = domain + route_api_admin_update_spot_content
 # endpoint_admin_logs = domain + route_admin_logs
 
 # if app_stage == 'dev' or app_stage == 'local':
@@ -51,6 +67,7 @@ footer_text = '</body>\n</html>'
 ########## AWS SETTINGSS ##########
 # Create boto3 object references
 s3 = boto3.resource('s3', region_name='us-east-1')
+s3_client = boto3.client('s3', region_name='us-east-1')
 dynamo = boto3.resource('dynamodb', region_name='us-east-1')
 cognito = boto3.client('cognito-identity', region_name='us-east-1')
 
@@ -79,8 +96,8 @@ table_hydrologic_name = 'Harvey-Hydrologic'
 #   table_spot_name = 'Harvey-DEV-Spot'
 
 # Create the Table objects and index settings
-table_user_index= 'status-index'
-table_user_index_cognito_id= 'cognito_id-index'
+table_user_index = 'status-index'
+table_user_index_cognito_id = 'cognito_id-index'
 table_user_index_fb_id= 'facebook_id-index'
 table_user_conn_index = 'user_id-index'
 table_user_conn_target_index = 'target_user_id-index'
@@ -91,11 +108,11 @@ table_structure_user_index_user = 'user_id-timestamp-index'
 table_repair_index = 'structure_id-index'
 table_repair_image_index = 'repair_id-timestamp-index'
 table_repair_image_index_status = 'status-timestamp-index'
-table_spot_index= 'status-timestamp-index'
-table_spot_content_index_status= 'status-timestamp-index'
-table_spot_content_index_spot_id= 'spot_id-timestamp-index'
+table_spot_index = 'status-timestamp-index'
+table_spot_content_index_status = 'status-timestamp-index'
+table_spot_content_index_spot_id = 'spot_id-timestamp-index'
 table_spot_content_index_content_id= 'content_id-timestamp-index'
-table_spot_request_index= 'status-timestamp-index'
+table_spot_request_index = 'status-timestamp-index'
 table_hazard_index = 'status-timestamp-index'
 table_shelter_index = 'status-index'
 table_hydrologic_index = 'gauge_id-status-index'
@@ -120,7 +137,7 @@ skill_list = {
   , 'general woodworking' : {'order':17, 'image':'Harvey.png'}
   , 'heavy lifting' : {'order':18, 'image':'Harvey.png'}
 }
-repair_list = {
+repair_types = {
   'mucking' : {'order':1, 'image':'mucking.png'}
   , 'electrical replacement' : {'order':2, 'image':'electrical.png'}
   , 'plumbing patching' : {'order':3, 'image':'plumbing.png'}
@@ -138,6 +155,17 @@ repair_list = {
   , 'fixture installation' : {'order':15, 'image':'fixture.png'}
   , 'appliance repair or installation' : {'order':16, 'image':'appliance.png'}
   , 'landscaping' : {'order':17, 'image':'landscaping.png'}
+}
+repair_stages = {
+  0 : {'title':'na', 'color':'#FFFFFF'}
+  , 1 : {'title':'need help', 'color':'#B34700'}
+  , 2 : {'title':'repairing', 'color':'#B38F00'}
+  , 3 : {'title':'complete', 'color':'#248F24'}
+  , 4 : {'title':'other', 'color':'#1A1A1A'}
+}
+repair_list = {
+  'types' : repair_types
+  , 'stages' : repair_stages
 }
 
 # FLASK ASSET BUNDLES FOR REFERENCE & MINIFICATION
@@ -187,7 +215,12 @@ bundles = {
 refs = {'app_stage' : app_stage
   , 'domain' : domain
   , 'folder_spot_image' : folder_spot_image
-  , 'endpoint_spots' : endpoint_spots
+  , 'endpoint_image_data' : endpoint_image_data
+  , 'endpoint_spot_query_active' : endpoint_spot_query_active
+  , 'endpoint_spot_content_query' : endpoint_spot_content_query
+  , 'endpoint_hazard_query_active' : endpoint_hazard_query_active
+  , 'endpoint_structure_query' : endpoint_structure_query
+  , 'endpoint_repair_query' : endpoint_repair_query
   # , 'endpoint_admin_logs' : endpoint_admin_logs
   , 'endpoint_admin_update_spot_content' : endpoint_admin_update_spot_content
   , 'meta_keywords' : meta_keywords

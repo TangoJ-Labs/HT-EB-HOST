@@ -9,7 +9,7 @@ from decimal import Decimal
 # from dynamodb_json import json_util
 from operator import itemgetter
 from io import BytesIO
-from PIL import Image
+from PIL import Image, ExifTags
 from urlparse import urlparse, urlunparse
 import boto3
 import calendar
@@ -25,7 +25,7 @@ import ht_references
 import ht_lib_admin
 # import ht_utility
 
-# Import Blueprint
+# Import APP Blueprints
 from app.ht_app_route import bp_test \
   , bp_app_test \
   , bp_app_random_id \
@@ -53,6 +53,20 @@ from app.ht_app_route import bp_test \
   , bp_app_shelter_query_active \
   , bp_app_hydro_query_active
 
+# Import API Blueprints
+from api.ht_api_route import bp_api_test \
+  , bp_api_app_settings \
+  , bp_api_image_data \
+  , bp_api_skill_query \
+  , bp_api_structure_query \
+  , bp_api_structure_user_query \
+  , bp_api_repair_query \
+  , bp_api_spot_query_active \
+  , bp_api_spot_content_query \
+  , bp_api_hazard_query_active \
+  , bp_api_shelter_query_active \
+  , bp_api_hydro_query_active
+
 ##### KEEP 'APPLICATION': EB environ settings currently looking for 'application' callable by default
 application = Flask(__name__,
             static_url_path='',
@@ -61,6 +75,7 @@ application.register_blueprint(bp_test)
 application.register_blueprint(bp_app_test)
 application.register_blueprint(bp_app_random_id)
 application.register_blueprint(bp_app_settings)
+application.register_blueprint(bp_api_image_data)
 application.register_blueprint(bp_app_login)
 application.register_blueprint(bp_app_user_check)
 application.register_blueprint(bp_app_user_update)
@@ -83,6 +98,17 @@ application.register_blueprint(bp_app_hazard_query_active)
 application.register_blueprint(bp_app_hazard_put)
 application.register_blueprint(bp_app_shelter_query_active)
 application.register_blueprint(bp_app_hydro_query_active)
+application.register_blueprint(bp_api_test)
+application.register_blueprint(bp_api_app_settings)
+application.register_blueprint(bp_api_skill_query)
+application.register_blueprint(bp_api_structure_query)
+application.register_blueprint(bp_api_structure_user_query)
+application.register_blueprint(bp_api_repair_query)
+application.register_blueprint(bp_api_spot_query_active)
+application.register_blueprint(bp_api_spot_content_query)
+application.register_blueprint(bp_api_hazard_query_active)
+application.register_blueprint(bp_api_shelter_query_active)
+application.register_blueprint(bp_api_hydro_query_active)
 application.config["ASSETS_DEBUG"] = ht_references.app_debug
 # CORS(application, resources={r"/*": {"origins": "https://feedslant.com/"}})
 # CORS(application, resources=r'/api/*')
@@ -171,7 +197,28 @@ def admin_monitor(age=1):
     s3_object = resource.Bucket(ht_references.folder_spot_image).Object(spot_content['content_id'] + '.jpg')
     # s3_object = ht_references.s3.Bucket(ht_references.folder_spot_image).Object(spot_content['content_id'] + '.jpg')
     # print(s3_object.get())
-    image64 = b64encode(s3_object.get()["Body"].read())
+    # image64 = b64encode(s3_object.get()["Body"].read())
+    image_object = Image.open(BytesIO(s3_object.get()["Body"].read()))
+  #   image64 = b64encode(s3_object.get()["Body"].read())
+  #   image = image64.decode('base64')
+
+    for orientation in ExifTags.TAGS.keys():
+        print(orientation)
+        if ExifTags.TAGS[orientation]=='Orientation':
+            break
+    exif=dict(image_object._getexif().items())
+    print(exif)
+
+    if exif[orientation] == 3:
+        image_object=image_object.rotate(180, expand=True)
+    elif exif[orientation] == 6:
+        image_object=image_object.rotate(270, expand=True)
+    elif exif[orientation] == 8:
+        image_object=image_object.rotate(90, expand=True)
+  #   image64 = b64encode(image_object)
+    image_buffer = BytesIO()
+    image_object.save(image_buffer, format="JPEG")
+    image64 = b64encode(image_buffer.getvalue())
     # buffer = BytesIO()
     # image64.save(buffer, format="JPEG")
     # image = Image.open(image64.decode('base64'))
@@ -195,7 +242,11 @@ def admin_monitor(age=1):
     # img = Image.open(image)
     # imgMod = img.rotate(90)
     spot_content['image'] = image64
-    # print(image)
+
+    params = {'Bucket': 'harvey-media','Key': spot_content['content_id'] + '.jpg'}
+    url = ht_references.s3_client.generate_presigned_url('get_object', Params=params, ExpiresIn=86400, HttpMethod='GET')
+    spot_content['image_url'] = url
+    print(url)
     spot_content_all.append(spot_content)
 
   spot_content_sorted = sorted(spot_content_flagged, key=itemgetter('timestamp'), reverse=True)
@@ -203,42 +254,30 @@ def admin_monitor(age=1):
 
 
 ##### APIs #####
-# ENDPOINT TO RECEIVE ACTIVE SPOTS
-@application.route('/' + ht_references.route_data_spot, methods=['POST'])
-def data_grabs():
-  print("ROUTE: DATA - SPOT")
-  # Retrieve the POST json parameters
-  # print(request.json)
-  timestamp_begin = request.json['timestamp_begin']
-
-  # Return all active Spots later than the passed timestamp (begin)
-  spots = ht_lib_admin.spot_active(timestamp_begin)
-  return json.dumps(spots, default=ht_utility.decimal_default)
-
-# ENDPOINT TO PASS ADMIN SPOT CONTENT MODIFICATION COMMANDS
-@application.route('/' + ht_references.route_admin_update_spot_content, methods=['POST'])
-def admin_modify():
-  print("ROUTE: ADMIN - UPDATE SPOT CONTENT")
-  print(request.json)
-  print(request.headers)
-  print(request.remote_addr)
-  print(list(request.access_route))
-
-  # Retrieve the POST json parameters
-  user_id = request.json['user_id']
-  content_id = request.json['content_id']
-  status = request.json['status']
-
-  response = 'did not start'
-  # # Ensure the user is an admin
-  # u_type = ht_lib_admin.user_type(user_id)
-  # if u_type == 'admin':
-  #   response = ht_lib_admin.update_spot_content_status(content_id, status)
-  # else:
-  #   response = 'unauthorized'
-
-  response = ht_lib_admin.update_spot_content_status(content_id, status)
-  return response
+# # ENDPOINT TO PASS ADMIN SPOT CONTENT MODIFICATION COMMANDS
+# @application.route('/' + ht_references.route_api_admin_update_spot_content, methods=['POST'])
+# def admin_modify():
+#   print("ROUTE: ADMIN - UPDATE SPOT CONTENT")
+#   print(request.json)
+#   print(request.headers)
+#   print(request.remote_addr)
+#   print(list(request.access_route))
+#
+#   # Retrieve the POST json parameters
+#   user_id = request.json['user_id']
+#   content_id = request.json['content_id']
+#   status = request.json['status']
+#
+#   response = 'did not start'
+#   # # Ensure the user is an admin
+#   # u_type = ht_lib_admin.user_type(user_id)
+#   # if u_type == 'admin':
+#   #   response = ht_lib_admin.update_spot_content_status(content_id, status)
+#   # else:
+#   #   response = 'unauthorized'
+#
+#   response = ht_lib_admin.update_spot_content_status(content_id, status)
+#   return response
 
 
 ##### TEMPLATE FUNCTIONS #####
