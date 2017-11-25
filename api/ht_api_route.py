@@ -44,6 +44,24 @@ def app_settings():
     response['response'] = 'success'
   return jsonify(response)
 
+# RETURN THE COGNITO ID BASED ON FB ID
+bp_api_cognito_id = Blueprint('bp_api_cognito_id', __name__)
+@bp_api_cognito_id.route('/' + ht_references.route_api_cognito_id, methods=['POST'])
+def api_cognito_id():
+  print("ROUTE: API - COGNITO ID")
+  # Retrieve the POST json parameters
+  body = request.get_json(force=True)
+  # Prep the response and fire the appropriate version of the function
+  response = {'response' : 'failure'}
+  if 'app_version' in body:
+    # Replace the periods in the version name to underscores (to match the package name)
+    app_version_mod = body['app_version'].replace('.', '_')
+    # import the module needed from the package that matches the version name
+    util = importlib.import_module('..v' + app_version_mod + '.ht_api_lib_util', 'api.subpkg')
+    response['user_data'] = util.cognito_id(body)
+    response['response'] = 'success'
+  return jsonify(response)
+
 # RECALL IMAGE DATA
 bp_api_image_data = Blueprint('bp_api_image_data', __name__)
 @bp_api_image_data.route('/' + ht_references.route_api_image_data, methods=['POST'])
@@ -77,6 +95,23 @@ def api_skill_query():
     util = importlib.import_module('..v' + app_version_mod + '.ht_api_lib_util', 'api.subpkg')
     response['skills'] = util.skill_query(body)
     response['response'] = 'success'
+  return jsonify(response)
+
+# UPDATE / PUT A USER SKILL
+bp_api_skill_put = Blueprint('bp_api_skill_put', __name__)
+@bp_api_skill_put.route('/' + ht_references.route_api_skill_put, methods=['POST'])
+def api_skill_put():
+  print("ROUTE: API - SKILL PUT")
+  # Retrieve the POST json parameters
+  body = request.get_json(force=True)
+  # Prep the response and fire the appropriate version of the function
+  response = {'response' : 'failure'}
+  if 'app_version' in body:
+    app_version_mod = body['app_version'].replace('.', '_')
+    util = importlib.import_module('..v' + app_version_mod + '.ht_api_lib_util', 'api.subpkg')
+    skill_put_response = util.skill_put(body)
+    if skill_put_response['response'] == 'success':
+      response['response'] = 'success'
   return jsonify(response)
 
 # RETURN ALL STRUCTURES FOR THE PASSED USER

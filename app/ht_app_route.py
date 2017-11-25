@@ -300,7 +300,7 @@ def app_repair_put():
 
 # RECALL THE SPOT DATA
 bp_app_spot_query_active = Blueprint('bp_app_spot_query_active', __name__)
-@bp_app_spot_query_active.route('/' + ht_references.endpoint_spot_query_active, methods=['POST'])
+@bp_app_spot_query_active.route('/app/spot/query/active', methods=['POST'])
 def app_spot_query_active():
   print("ROUTE: SPOT QUERY ACTIVE")
   # Retrieve the POST json parameters

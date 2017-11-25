@@ -13,6 +13,7 @@ html, body {
 	font-size: 24px;
 	font-weight: 200;
 	-webkit-font-smoothing: subpixel-antialiased;
+  overflow-y: hidden;
 }
 html {
 	/*overflow-y: scroll;
@@ -30,7 +31,7 @@ html {
 	margin: 0;
   top: 0px;
   left: 0px;
-  background-color: white;
+  background-color: #EB6D24;
   -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
@@ -38,9 +39,9 @@ html {
 #banner-container {
   position: relative;
   height: 50px;
-	width: 300px;
+	width: 140px;
   margin-top: 0px;
-  margin-left: calc(50% - 150px);
+  margin-left: calc(50% - 70px);
 }
 #banner-text {
 	position: absolute;
@@ -57,7 +58,7 @@ html {
   height: 40px;
 	width: 120px;
   top: 5px;
-  right: 5px;
+  left: 10px;
   cursor: pointer;
 }
 
@@ -69,8 +70,8 @@ html {
 	margin: 0;
   margin-top: 50px;
 	padding: 0;
-	/*overflow-x: hidden;
-	overflow-y: hidden;*/
+	overflow-x: hidden;
+	overflow-y: hidden;
 }
 
 #map-container {
@@ -79,6 +80,7 @@ html {
 	height: calc(100% - 50px);
 	width: 100%;
   top: 50px;
+  background-color: #FFF;
     /*overflow-y: hidden;*/
 	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
@@ -104,12 +106,36 @@ html {
 	height: 40px;
 	width: 40px;
 	left: 10px;
-	top: 10px;
+	top: 5px;
 	background-color: white;
 	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 	cursor: pointer;
+}
+#map-profile-button {
+	z-index: 300;
+	position: absolute;
+	height: 40px;
+	width: 40px;
+	right: 10px;
+	top: 5px;
+	/*background-color: white;*/
+	/*-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);*/
+	cursor: pointer;
+}
+#map-profile-button-icon {
+  position: absolute;
+	height: 36px;
+	width: 36px;
+	left: 2px;
+	top: 2px;
+	/*background-color: gray;*/
+	background-position: center;
+	background-size: contain;
+	background-repeat: no-repeat;
 }
 .menu-toggle-container {
 	z-index: 101;
@@ -248,6 +274,7 @@ html {
 	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 }
 .data-container {
+  z-index: 301;
 	height: 100%;
 	width: 200px;
 	top: 0px;
@@ -256,7 +283,7 @@ html {
 	overflow-y: auto;
 }
 .data-container-sub {
-	z-index: 300;
+	z-index: 303;
 	position: fixed;
 	height: calc(100% - 50px);
 	width: 200px;
@@ -267,7 +294,17 @@ html {
 	overflow-x: hidden;
 	overflow-y: hidden;
 }
-.repair-image-container {
+#repair-image-container {
+  z-index: 303;
+  position: absolute;
+	height: calc(100% - 110px);
+	width: 200px;
+	top: 110px;
+	padding-right: 20px;
+  overflow-x: hidden;
+	overflow-y: auto;
+}
+.repair-image-container-sub {
   position: relative;
 	height: 200px;
 	width: 200px;
@@ -312,7 +349,139 @@ html {
   text-align: left;
 }
 
+#profile-image {
+  z-index: 302;
+  position: absolute;
+  top: 0px;
+  left: 50px;
+  height: 100px;
+  width: 100px;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  image-orientation: from-image; /* Only works for Firefox */
+}
+#profile-name {
+  z-index: 302;
+  position: absolute;
+  top: 100px;
+  left: 0px;
+  height: 30px;
+  width: 200px;
+  color: #1A1A1A;
+  font-family: 'Open Sans Condensed', sans-serif;
+  font-size: 16px;
+  font-weight: 200;
+  text-align: center;
+  line-height: 30px;
+}
+#user-data-container {
+	z-index: 303;
+	position: absolute;
+	height: calc(100% - 130px);
+	width: 200px;
+	top: 130px;
+	left: 0px;
+	/*background-color: red;*/
+  /*white-space: nowrap;*/
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+#user-data-tabs {
+  z-index: 304;
+	position: absolute;
+	height: 40px;
+	width: 200px;
+	top: 0px;
+	left: 0px;
+	/*background-color: red;*/
+  /*white-space: nowrap;*/
+	overflow-x: hidden;
+	overflow-y: hidden;
+}
+.user-data-tab {
+  z-index: 305;
+	position: absolute;
+	height: 38px;
+	width: 100px;
+	top: 0px;
+  color: #1A1A1A;
+  font-family: 'Open Sans Condensed', sans-serif;
+  font-size: 16px;
+  font-weight: 200;
+  text-align: center;
+  line-height: 38px;
+  overflow-x: hidden;
+	overflow-y: hidden;
+  cursor: pointer;
+}
+#user-skills-tab {
+  left: 0px;
+}
+#user-structure-tab {
+  left: 100px;
+}
+.user-data-tab-selected {
+  color: #1A1A1A;
+  border: 1px solid #ddd;
+  border-top: 2px solid #1A1A1A;
+  border-bottom: 1px solid #fff;
+}
+.user-data-tab-unselected {
+  color: #bbb;
+  border-top: 1px solid #ccc;
+}
+.user-data-container-sub {
+  z-index: 304;
+	position: absolute;
+	height: calc(100% - 40px);
+	width: 200px;
+	top: 40px;
+	left: 0px;
+	/*background-color: red;*/
+  /*white-space: nowrap;*/
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+#user-skills-container {
+  z-index: 306;
+  background-color: #FFF;
+}
+#user-structure-container {
+  z-index: 305;
+  background-color: #EB6D24;
+}
+#user-structure-text {
+  position: relative;
+	height: 160px;
+	width: 200px;
+	margin-top: 40px;
+	margin-left: 0px;
+	overflow-x: hidden;
+	overflow-y: hidden;
+}
+#user-structure-text-note {
+  position: relative;
+	height: 60px;
+	width: 180px;
+	margin-top: 20px;
+	margin-left: 10px;
+  color: #FFF;
+  font-family: 'Open Sans Condensed', sans-serif;
+  font-size: 18px;
+  font-weight: 200;
+  text-align: center;
+  line-height: 20px;
+}
+#app-store-icon-structure {
+  position: relative;
+  height: 40px;
+	width: 120px;
+	margin-top: 20px;
+	margin-left: 40px;
+}
 #structure-image {
+  z-index: 302;
   position: absolute;
   top: 0px;
   left: 0px;
@@ -324,6 +493,7 @@ html {
   image-orientation: from-image; /* Only works for Firefox */
 }
 #structure-user {
+  z-index: 303;
   position: absolute;
   top: 10px;
   right: 10px;
@@ -335,6 +505,12 @@ html {
   background-repeat: no-repeat;
   image-orientation: from-image; /* Only works for Firefox */
   cursor: pointer;
+  font-family: 'Open Sans Condensed', sans-serif;
+  font-size: 20px;
+  font-weight: 200;
+  text-align: center;
+  line-height: 50px;
+  background-color: white;
 }
 #structure-repair-container {
   position: absolute;
@@ -346,7 +522,7 @@ html {
   overflow-x: hidden;
   /*background-color: red;*/
 }
-.repair-container {
+.repair-container, .skill-container {
 	position: relative;
   margin-bottom: 10px;
 	height: 100px;
@@ -358,7 +534,7 @@ html {
 	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 }
-.repair-stage {
+.repair-stage, .skill-stage {
 	position: relative;
 	height: 30px;
 	width: 200px;
@@ -370,13 +546,13 @@ html {
   text-align: center;
   vertical-align: middle;
 }
-.repair-detail {
+.repair-detail, .skill-detail {
 	position: relative;
 	height: 70px;
 	width: 200px;
   cursor: pointer;
 }
-.repair-icon {
+.repair-icon, .skill-icon {
 	position: absolute;
   top: 10px;
   left: 10px;
@@ -387,7 +563,7 @@ html {
   background-repeat: no-repeat;
   image-orientation: from-image; /* Only works for Firefox */
 }
-.repair-title {
+.repair-title, .skill-title {
   /*position: absolute;*/
   position: relative;
   top: 50%;
@@ -416,7 +592,7 @@ html {
   text-align: right;
   vertical-align: middle;
 }
-.repair-image {
+.repair-image, .skill-image {
 	position: relative;
 	height: 200px;
 	width: 200px;
@@ -431,7 +607,7 @@ html {
   z-index: 300;
   position: absolute;
   top: calc(50% - 30px);
-  left: calc(50% - 30px);
+  left: calc(50% - 10px);
   font-size: 30px;
   width: 1em;
   height: 1em;

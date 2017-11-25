@@ -1,3 +1,5 @@
+var appVersion = '2.0.0';
+
 var refs;
 var spots;
 var map;
@@ -21,6 +23,16 @@ var hazardMarkers = [];
 var structureMarkers = [];
 
 var repairSettings = [];
+var userSkills = [];
+var skillLevels = {};
+var skillSettings = {};
+
+// USER DATA
+var userId = '';
+var facebookId = '';
+var facebookName = '';
+var cognitoId = '';
+var serverToken = '';
 
 var downloadingStructures = false;
 var downloadingSpots = false;
@@ -31,8 +43,10 @@ var menuTrafficToggle = false;
 var menuStructureToggle = false;
 var menuSpotToggle = false;
 var menuHazardToggle = false;
-var dataToggle = false;
+var spotToggle = false;
+var structureToggle = false;
 var repairToggle = false;
+var profileToggle = false;
 
 // Track if a map item is clicked to prevent normal map events from overriding item events
 var circleClick = false;
@@ -169,13 +183,31 @@ function initMap()
       }
 
       // Ensure that the data containers are closed
-      if (dataToggle)
+      if (spotToggle)
       {
-        $('.data-container-all').animate({
+        $('#spot-container-all').animate({
           'right': '-200px'
         }, 200, function()
         {
-          dataToggle = false;
+          spotToggle = false;
+        });
+      }
+      if (structureToggle)
+      {
+        $('#structure-container-all').animate({
+          'right': '-200px'
+        }, 200, function()
+        {
+          structureToggle = false;
+        });
+      }
+      if (profileToggle)
+      {
+        $('#profile-container-all').animate({
+          'right': '-200px'
+        }, 200, function()
+        {
+          profileToggle = false;
         });
       }
       if (repairToggle)
@@ -189,28 +221,122 @@ function initMap()
       }
     });
 
-    // Ensure that the data containers are closed when the map or menu are clicked
-    $("#map").click(function()
+    $("#map-profile-button").click(function()
     {
-      console.log("MAP CLICKED");
-      if (dataToggle && !markerClick && !circleClick)
+      console.log("MAP PROFILE BUTTON CLICKED");
+      try
+      {
+        FB.login(function(loginResponse)
+        {
+          if (loginResponse.authResponse)
+          {
+            console.log('FB LOGIN AUTH IN PROCESS');
+            console.log(loginResponse);
+            FB.api('/me', function(apiResponse)
+            {
+              console.log(apiResponse);
+              // Store the token for secure access temporarily
+              serverToken = loginResponse.authResponse.accessToken;
+              // serverTokenExpiresAt = (Date.now() / 1000) + loginResponse.authResponse.expiresIn;
+
+              // Save the user profile name
+              facebookName = apiResponse.name
+              $('#profile-name').text(facebookName);
+
+              // Request Cognito credentials to perform secure requests
+              requestCognitoCredentials(loginResponse.authResponse.userID, serverToken);
+            });
+          }
+          else
+          {
+            console.log('FB LOGIN - USER CANCELLED OR DID NOT AUTH');
+          }
+        });
+      }
+      catch (e)
+      {
+        alert("Hey, I'm your Harveytown App!\n\nI'm sorry, but I can't load Facebook login due to your security settings.\n\nPlease check that Tracking Protection is not enabled.\n\nThanks!");
+      }
+
+      if (spotToggle)
       {
         $('#spot-container-all').animate({
           'right': '-200px'
         }, 200, function()
         {
-          dataToggle = false;
+          spotToggle = false;
         });
       }
-      if (dataToggle && !structureClick)
+      if (structureToggle)
       {
         $('#structure-container-all').animate({
           'right': '-200px'
         }, 200, function()
         {
-          dataToggle = false;
+          structureToggle = false;
         });
       }
+      if (repairToggle)
+      {
+        $('#repair-container-sub').animate({
+          'right': '-200px'
+        }, 200, function()
+        {
+          repairToggle = false;
+        });
+      }
+      if (!profileToggle)
+      {
+        $('#profile-container-all').animate({
+          'right': '0px'
+        }, 200, function()
+        {
+          profileToggle = true;
+        });
+      }
+      else
+      {
+        $('#profile-container-all').animate({
+          'right': '-200px'
+        }, 200, function()
+        {
+          profileToggle = false;
+        });
+      }
+    });
+
+    // Ensure that the data containers are closed when the map or menu are clicked
+    $("#map").click(function()
+    {
+      console.log("MAP CLICKED");
+      if (spotToggle && !markerClick && !circleClick)
+      {
+        $('#spot-container-all').animate({
+          'right': '-200px'
+        }, 200, function()
+        {
+          spotToggle = false;
+        });
+      }
+      if (structureToggle && !structureClick)
+      {
+        $('#structure-container-all').animate({
+          'right': '-200px'
+        }, 200, function()
+        {
+          structureToggle = false;
+        });
+      }
+      if (profileToggle)
+      {
+        $('#profile-container-all').animate({
+          'right': '-200px'
+        }, 200, function()
+        {
+          profileToggle = false;
+        });
+      }
+
       if (repairToggle)
       {
         $('#repair-container-sub').animate({
@@ -224,13 +350,31 @@ function initMap()
     $("#menu").click(function()
     {
       console.log("MENU CLICKED");
-      if (dataToggle)
+      if (spotToggle)
       {
-        $('.data-container-all').animate({
+        $('#spot-container-all').animate({
           'right': '-200px'
         }, 200, function()
         {
-          dataToggle = false;
+          spotToggle = false;
+        });
+      }
+      if (structureToggle)
+      {
+        $('#structure-container-all').animate({
+          'right': '-200px'
+        }, 200, function()
+        {
+          structureToggle = false;
+        });
+      }
+      if (profileToggle)
+      {
+        $('#profile-container-all').animate({
+          'right': '-200px'
+        }, 200, function()
+        {
+          profileToggle = false;
         });
       }
       if (repairToggle)
@@ -375,6 +519,28 @@ function initMap()
     // return false;
   });
 
+  // When either tab is selected, change the tab classes, hide the opposite data container, and show the needed data container
+  $("#user-skills-tab").click(function()
+  {
+    $("#user-skills-tab").removeClass("user-data-tab-unselected");
+    $("#user-skills-tab").addClass("user-data-tab-selected");
+    $("#user-structure-tab").removeClass("user-data-tab-selected");
+    $("#user-structure-tab").addClass("user-data-tab-unselected");
+
+    $("#user-structure-container").css("z-index", "305");
+    $("#user-skills-container").css("z-index", "306");
+  });
+  $("#user-structure-tab").click(function()
+  {
+    $("#user-structure-tab").removeClass("user-data-tab-unselected");
+    $("#user-structure-tab").addClass("user-data-tab-selected");
+    $("#user-skills-tab").removeClass("user-data-tab-selected");
+    $("#user-skills-tab").addClass("user-data-tab-unselected");
+
+    $("#user-skills-container").css("z-index", "305");
+    $("#user-structure-container").css("z-index", "306");
+  });
+
   // If a structure detail is showing, and a repair is selected, show the repair screen
   $('body').on('click', '.repair-container', function ()
   {
@@ -445,13 +611,44 @@ function initMap()
       });
     }
   });
+
+  $('body').on('click', '.skill-container', function ()
+  {
+    console.log("SKILL CLICKED");
+    var skillClicked = $(this).data("skill");
+
+    // Loop through the global user skill list to find the skill clicked, then change the level (increment)
+    var skillLevelNew = 0;
+    for (s = 0; s < userSkills.length; s++)
+    {
+      if (userSkills[s].skill == skillClicked)
+      {
+        if (userSkills[s].level == 2)
+        {
+          skillLevelNew = 0;
+        }
+        else
+        {
+          skillLevelNew = userSkills[s].level + 1;
+        }
+        userSkills[s].level = skillLevelNew
+      }
+    }
+
+    // Now refresh the list to show the change
+    refreshSkillList();
+
+    // Upload the change to the server
+    putSkillLevel(skillClicked, skillLevelNew, userId, cognitoId, serverToken);
+  });
 }
 
 // Reset the Structure container (so old data does not show when opened)
 function resetStructureContainer()
 {
-  // Clear the user image
+  // Clear the user image and show the temp icon
   $('#structure-user').css('background-image', '');
+  $('#structure-user').html('&#x1F4AC;');
   // Clear the Structure image
   $('#structure-image').css('background-image', '');
   // Clear the repair container
@@ -526,10 +723,16 @@ function addSpotCircleForSpot(spot)
     requestSpotContentFor(spot.spot_id);
     lastSpotSelected = spot.spot_id;
 
-    // Open the data panel and display the item's data - ensure the other data container is closed
-    $('#structure-container-all').animate({
-      'right': '-200px'
-    }, 200);
+    // Open the data panel and display the item's data - ensure the other data containers are closed
+    if (structureToggle)
+    {
+      $('#structure-container-all').animate({
+        'right': '-200px'
+      }, 200, function()
+      {
+        structureToggle = false;
+      });
+    }
     if (repairToggle)
     {
       $('#repair-container-sub').animate({
@@ -539,13 +742,27 @@ function addSpotCircleForSpot(spot)
         repairToggle = false;
       });
     }
-    $('#spot-container-all').animate({
-      'right': '0px'
-    }, 200, function()
+    if (profileToggle)
     {
-      dataToggle = true;
-      circleClick = false;
-    });
+      $('#profile-container-all').animate({
+        'right': '-200px'
+      }, 200, function()
+      {
+        profileToggle = false;
+      });
+    }
+
+    // Open the container
+    if (!spotToggle)
+    {
+      $('#spot-container-all').animate({
+        'right': '0px'
+      }, 200, function()
+      {
+        spotToggle = true;
+        circleClick = false;
+      });
+    }
   });
 
   spotCircles.push(spotCircle);
@@ -580,9 +797,15 @@ function addSpotMarkerForSpot(spot)
     $('#spot-container').html('');
 
     // Open the data panel and display the item's data - ensure the other data container is closed
-    $('#structure-container-all').animate({
-      'right': '-200px'
-    }, 200);
+    if (structureToggle)
+    {
+      $('#structure-container-all').animate({
+        'right': '-200px'
+      }, 200, function()
+      {
+        structureToggle = false;
+      });
+    }
     if (repairToggle)
     {
       $('#repair-container-sub').animate({
@@ -592,13 +815,27 @@ function addSpotMarkerForSpot(spot)
         repairToggle = false;
       });
     }
-    $('#spot-container-all').animate({
-      'right': '0px'
-    }, 200, function()
+    if (profileToggle)
     {
-      dataToggle = true;
-      markerClick = false;
-    });
+      $('#profile-container-all').animate({
+        'right': '-200px'
+      }, 200, function()
+      {
+        profileToggle = false;
+      });
+    }
+
+    // Open the container
+    if (!spotToggle)
+    {
+      $('#spot-container-all').animate({
+        'right': '0px'
+      }, 200, function()
+      {
+        spotToggle = true;
+        markerClick = false;
+      });
+    }
   });
 
   spotMarkers.push(spotMarker);
@@ -801,17 +1038,37 @@ function addMarkerForStructure(structure)
       // Reset the Structure container to not show old data
       resetStructureContainer();
 
-      // Open the data panel and display the item's data - ensure that the other data container is closed
-      $('#spot-container-all').animate({
-        'right': '-200px'
-      }, 200);
-      $('#structure-container-all').animate({
-        'right': '0px'
-      }, 200, function()
+      // Open the data panel and display the item's data - ensure that the other data containers are closed
+      if (spotToggle)
       {
-        dataToggle = true;
-        structureClick = false;
-      });
+        $('#spot-container-all').animate({
+          'right': '-200px'
+        }, 200, function()
+        {
+          spotToggle = false;
+        });
+      }
+      if (profileToggle)
+      {
+        $('#profile-container-all').animate({
+          'right': '-200px'
+        }, 200, function()
+        {
+          profileToggle = false;
+        });
+      }
+
+      // Open the container
+      if (!structureToggle)
+      {
+        $('#structure-container-all').animate({
+          'right': '0px'
+        }, 200, function()
+        {
+          structureToggle = true;
+          structureClick = false;
+        });
+      }
   });
 
   structureMarkers.push(structureMarker);
@@ -832,8 +1089,176 @@ function structuresMapSet()
   }
 }
 
+// Reload the user's skill list using the global variables
+function refreshSkillList()
+{
+  // Clear the skill container
+  $('#user-skills-container').html('');
+  // Ensure the loader is showing
+  $('#profile-container-loader').css('visibility', 'visible');
+
+  // 1 - Loop the same number of times as the skill settings count
+  // 1 - Loop through the skill settings and find the next skill (in order)
+  // 2 - Find the user's skill that matches that next skill setting
+  // 3 - If the user's skill level is more than 0, add that skill html to the skill container
+  for (i = 0; i < Object.keys(skillSettings).length; i++)
+  {
+    $.each(skillSettings, function(sKey, sVal)
+    {
+      if (sVal.order == i)
+      {
+        for (s = 0; s < userSkills.length; s++)
+        {
+          if (userSkills[s].skill == sKey)
+          {
+            console.log("ADD SKILL: " + userSkills[s].skill + " WITH LEVEL: " + userSkills[s].level);
+            var skillHtml = '<div class="skill-container" data-skill="' + userSkills[s].skill + '">' +
+                '<div class="skill-stage" style="background-color:' + skillLevels[userSkills[s].level]['color'] +
+                '">' + userSkills[s].skill + '</div>' +
+                '<div class="skill-detail">' +
+                  '<img border="0" src="img/repairs/' + sVal.image + '" class="skill-icon">' +
+                  '<div class="skill-title">' + skillLevels[userSkills[s].level]['title'] + '</div>' +
+                '</div>' +
+              '</div>'
+            $('#user-skills-container').append(skillHtml);
+          }
+        }
+      }
+    });
+  }
+
+  // Now hide the loader
+  $('#profile-container-loader').css('visibility', 'hidden');
+}
+
 
 // API FUNCTIONS
+// Function to request Cognito credentials
+function requestCognitoCredentials(fbID, token)
+{
+  console.log("REQUESTING COGNITO CREDENTIALS");
+  console.log('ENDPOINT COGNITO: ' + refs['endpoint_cognito_id']);
+
+  var xhrHT = new XMLHttpRequest();
+  xhrHT.open('POST', refs['endpoint_cognito_id'], true);
+  xhrHT.setRequestHeader("Content-Type", "application/json");
+  xhrHT.send(JSON.stringify({
+    'app_version': appVersion
+    , 'fb_id': fbID
+    , 'token': token
+  }));
+  xhrHT.onerror = function()
+  {
+    console.log("XHR ERROR")
+
+    // DEV CHECK BEFORE PROD
+    // // The error might be a CORS error (www) - redirect?
+    // window.location = domain;
+  }
+  xhrHT.onreadystatechange = function()
+  {
+    if (xhrHT.readyState == XMLHttpRequest.DONE)
+    {
+      console.log('COGNITO RESPONSE:');
+      // console.log(xhrHT.responseText.toString());
+      var jsonResponse = JSON.parse(xhrHT.responseText);
+      console.log(jsonResponse);
+
+      userId = jsonResponse.user_data.user_id;
+      facebookId = jsonResponse.user_data.facebook_id;
+      cognitoId = jsonResponse.user_data.cognito_id;
+
+      $('#profile-image').css('background-image', 'url("http://graph.facebook.com/' + facebookId + '/picture?type=normal")');
+
+      requestSkills(userId, cognitoId, serverToken);
+    }
+  }
+}
+
+// Function to request a User's Skill data
+function requestSkills(uid, identityId, token)
+{
+  console.log("REQUESTING USER SKILLS");
+  console.log('ENDPOINT SKILLS: ' + refs['endpoint_skill_query']);
+
+  // Clear the current skill list and show the loader
+  $('#user-skills-container').html('');
+  $('#profile-container-loader').css('visibility', 'visible');
+
+  var xhrHT = new XMLHttpRequest();
+  xhrHT.open('POST', refs['endpoint_skill_query'], true);
+  xhrHT.setRequestHeader("Content-Type", "application/json");
+  xhrHT.send(JSON.stringify({
+    'app_version': appVersion
+    , 'identity_id': identityId
+    , 'login_provider': 'graph.facebook.com'
+    , 'login_token': token
+    , 'user_id': uid
+  }));
+  xhrHT.onerror = function()
+  {
+    console.log("XHR ERROR")
+
+    // DEV CHECK BEFORE PROD
+    // // The error might be a CORS error (www) - redirect?
+    // window.location = domain;
+  }
+  xhrHT.onreadystatechange = function()
+  {
+    if (xhrHT.readyState == XMLHttpRequest.DONE)
+    {
+      console.log('SKILLS RESPONSE:');
+      // console.log(xhrHT.responseText.toString());
+      var jsonResponse = JSON.parse(xhrHT.responseText);
+      console.log(jsonResponse);
+
+      userSkills = jsonResponse.skills.user_skills;
+      skillLevels = jsonResponse.skills.skill_levels;
+      skillSettings = jsonResponse.skills.skill_settings;
+
+      refreshSkillList();
+    }
+  }
+}
+
+// Function to update a skill's level
+function putSkillLevel(skill, level, uid, identityId, token)
+{
+  console.log("PUT USER SKILL LEVEL");
+  console.log('ENDPOINT SKILL PUT: ' + refs['endpoint_skill_put']);
+
+  var xhrHT = new XMLHttpRequest();
+  xhrHT.open('POST', refs['endpoint_skill_put'], true);
+  xhrHT.setRequestHeader("Content-Type", "application/json");
+  xhrHT.send(JSON.stringify({
+    'app_version': appVersion
+    , 'identity_id': identityId
+    , 'login_provider': 'graph.facebook.com'
+    , 'login_token': token
+    , 'user_id': uid
+    , 'skill': skill
+    , 'level': level
+  }));
+  xhrHT.onerror = function()
+  {
+    console.log("XHR ERROR")
+
+    // DEV CHECK BEFORE PROD
+    // // The error might be a CORS error (www) - redirect?
+    // window.location = domain;
+  }
+  xhrHT.onreadystatechange = function()
+  {
+    if (xhrHT.readyState == XMLHttpRequest.DONE)
+    {
+      console.log('SKILL PUT RESPONSE:');
+      // console.log(xhrHT.responseText.toString());
+      var jsonResponse = JSON.parse(xhrHT.responseText);
+      console.log(jsonResponse);
+    }
+  }
+}
+
 // Function to request Spot data
 function requestSpots()
 {
@@ -851,7 +1276,7 @@ function requestSpots()
   xhrHT.open('POST', refs['endpoint_spot_query_active'], true);
   xhrHT.setRequestHeader("Content-Type", "application/json");
   xhrHT.send(JSON.stringify({
-    'app_version': '2.0.0'
+    'app_version': appVersion
     , 'timestamp_begin': timestamp_begin
   }));
   xhrHT.onerror = function()
@@ -902,7 +1327,7 @@ function requestSpotContentFor(spotId)
   xhrHT.open('POST', refs['endpoint_spot_content_query'], true);
   xhrHT.setRequestHeader("Content-Type", "application/json");
   xhrHT.send(JSON.stringify({
-    'app_version': '2.0.0'
+    'app_version': appVersion
     , 'timestamp_begin': timestamp_begin
     , 'spot_id': spotId
   }));
@@ -980,7 +1405,7 @@ function requestHazards()
   xhrHT.open('POST', refs['endpoint_hazard_query_active'], true);
   xhrHT.setRequestHeader("Content-Type", "application/json");
   xhrHT.send(JSON.stringify({
-    'app_version': '2.0.0'
+    'app_version': appVersion
     , 'timestamp_begin': timestamp_begin
   }));
   xhrHT.onerror = function()
@@ -1031,7 +1456,7 @@ function requestStructures()
   xhrHT.open('POST', refs['endpoint_structure_query'], true);
   xhrHT.setRequestHeader("Content-Type", "application/json");
   xhrHT.send(JSON.stringify({
-    'app_version': '2.0.0'
+    'app_version': appVersion
     , 'timestamp_begin': timestamp_begin
   }));
   xhrHT.onerror = function()
@@ -1077,7 +1502,7 @@ function requestRepairsForStructure(structure)
   xhrHT.open('POST', refs['endpoint_repair_query'], true);
   xhrHT.setRequestHeader("Content-Type", "application/json");
   xhrHT.send(JSON.stringify({
-    'app_version': '2.0.0'
+    'app_version': appVersion
     , 'structure_id': structure.structure_id
     , 'structure': structure
   }));
@@ -1109,6 +1534,7 @@ function requestRepairsForStructure(structure)
           if (jsonResponse.request.structure.users.length > 0)
           {
               // requestImageForKey(jsonResponse.request.structure.users[0].user_id, structure);
+              $('#structure-user').html('');
               $('#structure-user').css('background-image', 'url("http://graph.facebook.com/' + jsonResponse.request.structure.users[0].facebook_id + '/picture?type=normal")');
 
               // $('<img/>').attr('src', "http://graph.facebook.com/' + jsonResponse.request.structure.users[0].facebook_id + '/picture?type=normal").on('load', function()
@@ -1188,7 +1614,7 @@ function requestImageForKey(imageKey, entityData)
   xhrHT.open('POST', refs['endpoint_image_data'], true);
   xhrHT.setRequestHeader("Content-Type", "application/json");
   xhrHT.send(JSON.stringify({
-    'app_version': '2.0.0'
+    'app_version': appVersion
     , 'image_key': imageKey
     , 'entity_data': entityData
   }));
@@ -1218,7 +1644,7 @@ function requestImageForKey(imageKey, entityData)
             {
                 console.log(jsonResponse.image_data);
                 // The repair matches, so add the image to the repair screen_popup
-                var imgHtml = '<div class="repair-image-container">' +
+                var imgHtml = '<div class="repair-image-container-sub">' +
                   '<img border="0" src="data:image/jpeg;charset=utf-8;base64, ' + jsonResponse.image_data.image + '" class="repair-image">'
                 '</div>' +
                 $('#repair-image-container').append(imgHtml);
@@ -1256,7 +1682,7 @@ function requestImageForKey(imageKey, entityData)
 //   xhrHT.open('GET', refs['endpoint_image_data'], true);
 //   xhrHT.setRequestHeader("Content-Type", "application/json");
 //   xhrHT.send(JSON.stringify({
-//     'app_version': '2.0.0'
+//     'app_version': appVersion
 //     , 'image_key': imageKey
 //     , 'entity_data': entityData
 //   }));

@@ -58,15 +58,19 @@
 				passRefs({{ refs|tojson }});
 				passSpots({{ spots|tojson }});
 			</script>
-			<!-- {% if refs.app_stage == 'prod': %}
+			{% if refs.app_stage == 'prod': %}
 				{{ script_analytics }}
-			{% endif %} -->
+			{% endif %}
 	</head>
 	<body>
     <div id="banner">
+      <div id="map-menu-button"></div>
       <div id="banner-container">
-        <div id="banner-text">APP ONLY: Add your damaged home or your volunteer skills.</div>
-        <a href="https://itunes.apple.com/us/app/harveytown/id1278667479" target="_blank"><img id="app-store-icon" border="0" src="img/app_store.svg"></a>
+        <!-- <div id="banner-text">APP ONLY: Add your damaged home or your volunteer skills.</div> -->
+        <a href="https://itunes.apple.com/us/app/harveytown/id1278667479" target="_blank"><img id="app-store-icon" border="0" src="img/app_store_white.svg"></a>
+      </div>
+      <div id="map-profile-button">
+        <img id="map-profile-button-icon" border="0" src="img/icons/icon_profile.svg">
       </div>
     </div>
 		<div id="everything">
@@ -115,7 +119,6 @@
 			<div id="map-container">
                 <div id="map-loader"></div>
 				<div id="map"></div>
-				<div id="map-menu-button"></div>
 			</div>
       <div class="data-container-all" id="spot-container-all">
           <div class="data-container" id="spot-container"></div>
@@ -126,16 +129,56 @@
     				<div id="structure-image">
               <div class="image-loader" id="structure-image-loader"></div>
             </div>
-    				<div id="structure-user"></div>
+    				<div id="structure-user">&#x1F4AC;</div>
     				<div id="structure-repair-container"></div>
             <div class="image-loader" id="structure-repair-loader"></div>
     			</div>
           <div class="data-container-sub" id="repair-container-sub">
               <div class="repair-container" id="repair-container-sub-header"></div>
-              <div class="data-container" id="repair-image-container"></div>
+              <div id="repair-image-container"></div>
               <div class="data-container-loader" id="repair-container-loader"></div>
           </div>
       </div>
+      <div class="data-container-all" id="profile-container-all">
+          <div class="data-container" id="profile-container">
+            <div id="profile-image"></div>
+            <div id="profile-name"></div>
+            <div id="user-data-container">
+              <div id="user-data-tabs">
+                <div class="user-data-tab user-data-tab-selected" id="user-skills-tab">Skills</div>
+                <div class="user-data-tab user-data-tab-unselected" id="user-structure-tab">House</div>
+              </div>
+              <div class="user-data-container-sub" id="user-skills-container"></div>
+              <div class="user-data-container-sub" id="user-structure-container">
+                <div id="user-structure-text">
+                  <div id="user-structure-text-note">Please download the app to add a house needing repairs.</div>
+                  <a href="https://itunes.apple.com/us/app/harveytown/id1278667479" target="_blank"><img id="app-store-icon-structure" border="0" src="img/app_store_white.svg"></a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="data-container-loader" id="profile-container-loader"></div>
+      </div>
 		</div>
 	</body>
+  <script>
+    window.fbAsyncInit = function()
+    {
+      FB.init({
+        appId            : '149434858974947',
+        autoLogAppEvents : true,
+        xfbml            : true,
+        version          : 'v2.11'
+      });
+    };
+
+    (function(d, s, id)
+    {
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "https://connect.facebook.net/en_US/sdk.js";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));
+  </script>
 </html>

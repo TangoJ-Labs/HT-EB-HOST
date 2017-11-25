@@ -56,8 +56,10 @@ from app.ht_app_route import bp_test \
 # Import API Blueprints
 from api.ht_api_route import bp_api_test \
   , bp_api_app_settings \
+  , bp_api_cognito_id \
   , bp_api_image_data \
   , bp_api_skill_query \
+  , bp_api_skill_put \
   , bp_api_structure_query \
   , bp_api_structure_user_query \
   , bp_api_repair_query \
@@ -75,7 +77,6 @@ application.register_blueprint(bp_test)
 application.register_blueprint(bp_app_test)
 application.register_blueprint(bp_app_random_id)
 application.register_blueprint(bp_app_settings)
-application.register_blueprint(bp_api_image_data)
 application.register_blueprint(bp_app_login)
 application.register_blueprint(bp_app_user_check)
 application.register_blueprint(bp_app_user_update)
@@ -100,7 +101,10 @@ application.register_blueprint(bp_app_shelter_query_active)
 application.register_blueprint(bp_app_hydro_query_active)
 application.register_blueprint(bp_api_test)
 application.register_blueprint(bp_api_app_settings)
+application.register_blueprint(bp_api_cognito_id)
+application.register_blueprint(bp_api_image_data)
 application.register_blueprint(bp_api_skill_query)
+application.register_blueprint(bp_api_skill_put)
 application.register_blueprint(bp_api_structure_query)
 application.register_blueprint(bp_api_structure_user_query)
 application.register_blueprint(bp_api_repair_query)

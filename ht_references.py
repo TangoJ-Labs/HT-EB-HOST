@@ -12,8 +12,10 @@ app_debug = False
 ##### API ENDPOINT ROUTES #####
 # Remove the "/" from the beginning of the path
 route_api_app_settings = 'api/settings'
+route_api_cognito_id = 'api/cognitoid'
 route_api_image_data = 'api/image'
 route_api_skill_query = 'api/skill/query'
+route_api_skill_put = 'api/skill/put'
 route_api_structure_query = 'api/structure/query'
 route_api_structure_user_query = 'api/structure-user/query'
 route_api_repair_query = 'api/repair/query'
@@ -35,11 +37,15 @@ if app_stage == 'dev':
 elif app_stage == 'local':
   app_state_name = 'dev'
   app_debug = True
-  domain = 'http://127.0.0.1:5000/'
+  # domain = 'http://127.0.0.1:5000/'
+  domain = 'http://192.168.1.8:5000/'
 
 # folder_spot_image = 'https://s3.amazonaws.com/harvey-media/'
 folder_spot_image = 'harvey-media'
+endpoint_cognito_id = domain + route_api_cognito_id
 endpoint_image_data = domain + route_api_image_data
+endpoint_skill_query = domain + route_api_skill_query
+endpoint_skill_put = domain + route_api_skill_put
 endpoint_spot_query_active = domain + route_api_spot_query_active
 endpoint_spot_content_query = domain + route_api_spot_content_query
 endpoint_hazard_query_active = domain + route_api_hazard_query_active
@@ -70,6 +76,7 @@ s3 = boto3.resource('s3', region_name='us-east-1')
 s3_client = boto3.client('s3', region_name='us-east-1')
 dynamo = boto3.resource('dynamodb', region_name='us-east-1')
 cognito = boto3.client('cognito-identity', region_name='us-east-1')
+cognito_identity_pool_id = 'us-east-1:e831ff1a-257a-4363-abe0-ca6ef52a3c0d'
 
 ##### LAMBDA FUNCTION SETTINGS #####
 function_get_spot_data = 'HT-GetSpotData'
@@ -136,6 +143,11 @@ skill_list = {
   , 'landscaping' : {'order':16, 'image':'landscaping.png'}
   , 'general woodworking' : {'order':17, 'image':'Harvey.png'}
   , 'heavy lifting' : {'order':18, 'image':'Harvey.png'}
+}
+skill_levels = {
+  0 : {'title':'No Experience', 'color':'#CCCCCC'}
+  , 1 : {'title':'Some Experience', 'color':'#F9A01E'}
+  , 2 : {'title':'Expert', 'color':'#44A9DF'}
 }
 repair_types = {
   'mucking' : {'order':1, 'image':'mucking.png'}
@@ -215,7 +227,10 @@ bundles = {
 refs = {'app_stage' : app_stage
   , 'domain' : domain
   , 'folder_spot_image' : folder_spot_image
+  , 'endpoint_cognito_id' : endpoint_cognito_id
   , 'endpoint_image_data' : endpoint_image_data
+  , 'endpoint_skill_query' : endpoint_skill_query
+  , 'endpoint_skill_put' : endpoint_skill_put
   , 'endpoint_spot_query_active' : endpoint_spot_query_active
   , 'endpoint_spot_content_query' : endpoint_spot_content_query
   , 'endpoint_hazard_query_active' : endpoint_hazard_query_active

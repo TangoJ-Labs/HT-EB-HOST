@@ -29,6 +29,31 @@ def api_settings():
   }
   return settings
 
+def cognito_id(body):
+  # Create an empty response json
+  response = {}
+  cognito_response = ht_references.cognito.get_id(
+    AccountId='954817893489'
+    , IdentityPoolId=ht_references.cognito_identity_pool_id
+    , Logins={
+      'graph.facebook.com': body['token']
+    }
+  )
+  # Get the user data based on the fbid
+  # Retrieve the User data
+  table_user = ht_references.dynamo.Table(ht_references.table_user_name)
+  user_response = table_user.query(
+    TableName=ht_references.table_user_name
+    , IndexName=ht_references.table_user_index_fb_id
+    , KeyConditionExpression=Key('facebook_id').eq(body['fb_id'])
+  )
+  # RETURN A SINGLE USER - NOT A LIST
+  if len(user_response['Items']) > 0:
+    response = user_response['Items'][0]
+  # Now add the cognito identity id as part of the user data
+  response['cognito_id'] = cognito_response['IdentityId']
+  return response
+
 def image_data(body):
   s3_object = ht_references.s3.Bucket(ht_references.folder_spot_image).Object(body['image_key'] + '.jpg')
   image_object = Image.open(BytesIO(s3_object.get()["Body"].read()))
@@ -118,17 +143,41 @@ def user_connection_query(body):
   return all_connections
 
 def skill_query(body):
+  # Create the boto3 resource object with the passed credentials
+  resource = ht_lib_admin.get_resource_with_credentials(body['identity_id'], body['login_provider'], body['login_token'], 'dynamodb', 'us-east-1')
   # Create an empty response array
   response = { 'user_id' : body['user_id'] }
   # Recall the Skill data for the user
-  table_skill = ht_references.dynamo.Table(ht_references.table_skill_name)
+  table_skill = resource.Table(ht_references.table_skill_name)
   skill_response = table_skill.query(
     TableName=ht_references.table_skill_name
     , IndexName=ht_references.table_skill_index
     , KeyConditionExpression=Key('user_id').eq(body['user_id'])
   )
-  response['skill_levels'] = skill_response['Items']
+  response['user_skills'] = skill_response['Items']
+  response['skill_levels'] = ht_references.skill_levels
   response['skill_settings'] = ht_references.skill_list
+  return response
+
+def skill_put(body):
+  # Create the boto3 resource object with the passed credentials
+  resource = ht_lib_admin.get_resource_with_credentials(body['identity_id'], body['login_provider'], body['login_token'], 'dynamodb', 'us-east-1')
+  # Create a default response
+  response = {'response' : 'success'}
+  # Create or update the current skill entry with the updated data
+  table_skill = resource.Table(ht_references.table_skill_name)
+  put_skill_response = table_skill.put_item(
+    TableName=ht_references.table_skill_name,
+    Item={
+      'skill_id' : body['user_id'] + '-' + body['skill']
+      , 'user_id' : body['user_id']
+      , 'skill' : body['skill']
+      , 'level' : Decimal(body['level'])
+      , 'status' : 'active'
+    }
+  )
+  if put_skill_response['ResponseMetadata']['HTTPStatusCode'] != 200:
+    response['response'] = 'failure'
   return response
 
 def structure_query(body):
