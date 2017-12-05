@@ -25,8 +25,8 @@ import ht_lib_admin
 
 def app_settings():
   settings = {
-    'skill_list' : ht_references.skill_list
-    , 'repair_list' : ht_references.repair_list
+    'skill_types' : ht_references.skill_types
+    , 'repair_settings' : ht_references.repair_settings
   }
   return settings
 
@@ -294,7 +294,7 @@ def skill_query(body):
     , KeyConditionExpression=Key('user_id').eq(body['user_id'])
   )
   response['skill_levels'] = skill_response['Items']
-  response['skill_settings'] = ht_references.skill_list
+  response['skill_types'] = ht_references.skill_types
   return response
 
 def skill_put(body):
@@ -335,6 +335,7 @@ def structure_query(body):
   # If a structure id was passed, only return the specific structure data, otherwise
   # return all active structure data
   table_structure = resource.Table(ht_references.table_structure_name)
+  print(body)
   if 'structure_id' in body:
     # Recall the Structure data
     structure_response = table_structure.query(
@@ -348,10 +349,17 @@ def structure_query(body):
       , IndexName=ht_references.table_structure_index
       , KeyConditionExpression=Key('status').eq('active')
     )
+  print("STRUCTURE QUERY RESPONSE:")
+  print(structure_response)
   if len(structure_response['Items']) > 0:
     response['result'] = 'success'
     structure_dict = []
     for structure in structure_response['Items']:
+      # Add the structure repairs
+      repair_response = repair_query(body)
+      if repair_response['result'] == 'success':
+        structure['repairs'] = repair_response['repairs']
+      # Add the structure users
       structure_user_body = {
         'identity_id' : body['identity_id']
         , 'login_provider' : body['login_provider']
@@ -391,22 +399,57 @@ def structure_put(body):
   )
   if put_structure_response['ResponseMetadata']['HTTPStatusCode'] == 200:
     response['response'] = 'success'
-    # Now add all repair entries for this structure with default stages for each
-    for repair in ht_references.repair_list:
-      repair_body = {
-        'identity_id' : body['identity_id']
-        , 'login_provider' : body['login_provider']
-        , 'login_token' : body['login_token']
-        , 'structure_id' : body['structure_id']
-        , 'repair' : repair
-        , 'stage' : Decimal(0)
-        , 'timestamp' : body['timestamp']
-        , 'updated_images' : Decimal(0)
-        , 'status' : 'active'
-      }
-      repair_response = repair_put(repair_body)
-      if repair_response['response'] == 'failure':
-        response['response'] = 'failure'
+    # Only add repairs if the structure is new
+    if Decimal(body['new_structure']) == 1:
+      # Now add all repair entries for this structure with default stages for each
+      for repair in ht_references.repair_types:
+        repair_body = {
+          'identity_id' : body['identity_id']
+          , 'login_provider' : body['login_provider']
+          , 'login_token' : body['login_token']
+          , 'structure_id' : body['structure_id']
+          , 'repair' : repair
+          , 'stage' : Decimal(0)
+          , 'timestamp' : body['timestamp']
+          , 'updated_images' : Decimal(0)
+          , 'status' : 'active'
+        }
+        repair_response = repair_put(repair_body)
+        if repair_response['response'] == 'failure':
+          response['response'] = 'failure'
+  return response
+
+def structure_delete(body):
+  # Create the boto3 resource object with the passed credentials
+  resource = ht_lib_admin.get_resource_with_credentials(body['identity_id'], body['login_provider'], body['login_token'], 'dynamodb', 'us-east-1')
+  # Create a default response
+  response = {'response' : 'failure'}
+  # Create data for the structure table
+  structure_data = {
+    'structure_id' : body['structure_id']
+    , 'timestamp' : Decimal(body['timestamp'])
+    , 'lat' : Decimal(body['lat'])
+    , 'lng' : Decimal(body['lng'])
+    , 'type' : Decimal(body['type'])
+    , 'stage' : Decimal(body['stage'])
+    , 'image_id' : body['image_id']
+    , 'status' : 'deleted' #body['status']
+  }
+  # Create or update the current structure entry with the updated data
+  table_structure = resource.Table(ht_references.table_structure_name)
+  put_structure_response = table_structure.put_item(
+    TableName=ht_references.table_structure_name,
+    Item=structure_data
+  )
+  if put_structure_response['ResponseMetadata']['HTTPStatusCode'] == 200:
+    # Now change any StructureUser entries to 'deleted'
+    print("STRUCTURE USER DELETE BODY:")
+    print(body)
+    structureUserResponse = structure_user_put(body)
+    print("STRUCTURE USER DELETE RESPONSE:")
+    print(structureUserResponse)
+    if structureUserResponse['response'] == 'success':
+      response['response'] = 'success'
   return response
 
 def structure_user_query(body):
@@ -431,7 +474,12 @@ def structure_user_query(body):
       , IndexName=ht_references.table_structure_user_index_user
       , KeyConditionExpression=Key('user_id').eq(body['user_id'])
     )
-    found_structure_users = structure_user_response['Items']
+    # Remove all 'deleted' structures
+    for structure_user in structure_user_response['Items']:
+      if structure_user['status'] != 'deleted':
+        found_structure_users.append(structure_user)
+  print("STRUCTURE USER RESPONSE:")
+  print(found_structure_users)
   return found_structure_users
 
 def structure_user_put(body):
@@ -439,12 +487,17 @@ def structure_user_put(body):
   resource = ht_lib_admin.get_resource_with_credentials(body['identity_id'], body['login_provider'], body['login_token'], 'dynamodb', 'us-east-1')
   # Create a default response
   response = {'response' : 'failure'}
+  # Make the default status 'active', but check for a different passed status
+  status = 'active'
+  if 'status' in body:
+    status = body['status']
   structure_user_data = {
-    'structure_user_id' : body['structure_user_id']
+    # 'structure_user_id' : body['structure_user_id']
+    'structure_user_id' : body['structure_id'] + "-" + body['user_id']
     , 'structure_id' : body['structure_id']
     , 'user_id' : body['user_id']
     , 'timestamp' : Decimal(body['timestamp'])
-    , 'status' : 'active'
+    , 'status' : status
   }
   # Create or update the current structure-user entry with the updated data
   table_structure_user = resource.Table(ht_references.table_structure_user_name)
@@ -491,6 +544,9 @@ def repair_query(body):
 def repair_put(body):
   # Create the boto3 resource object with the passed credentials
   resource = ht_lib_admin.get_resource_with_credentials(body['identity_id'], body['login_provider'], body['login_token'], 'dynamodb', 'us-east-1')
+  print("REPAIR PUT:")
+  print(body)
+
   # Create a default response
   response = {'response' : 'failure'}
   # Pull the existing repair - the original timestamp is needed to overwrite original
@@ -517,7 +573,7 @@ def repair_put(body):
   )
   # If new repair images are uploaded, change all old images to inactive
   repair_image_response = 'success'
-  if body['updated_images'] == 1:
+  if Decimal(body['updated_images']) == 1:
     # First change all active repair images to inactive
     table_repair_image = resource.Table(ht_references.table_repair_image_name)
     repair_response = table_repair_image.query(
@@ -542,7 +598,11 @@ def repair_put(body):
           repair_image_response = 'failure'
 
     # Loop through the updated / new repair images and add the data to the RepairImage db
+    print("REPAIR IMAGES:")
+    print(body['repair_images'])
     for repair_image in body['repair_images']:
+      print("REPAIR IMAGE UPDATE:")
+      print(repair_image)
       repair_image_data = {
         'image_id' : repair_image['image_id']
         , 'repair_id' : repair_image['repair_id']

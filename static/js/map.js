@@ -25,7 +25,7 @@ var structureMarkers = [];
 var repairSettings = [];
 var userSkills = [];
 var skillLevels = {};
-var skillSettings = {};
+var skillTypes = {};
 
 // USER DATA
 var userId = '';
@@ -33,6 +33,7 @@ var facebookId = '';
 var facebookName = '';
 var cognitoId = '';
 var serverToken = '';
+var previouslyLoggedIn = false;
 
 var downloadingStructures = false;
 var downloadingSpots = false;
@@ -53,6 +54,8 @@ var circleClick = false;
 var markerClick = false;
 var structureClick = false;
 
+var structureMatch = false;
+
 // Store the last item clicked to ensure other data is not displayed
 var lastSpotSelected = '';
 var lastStructureSelected = {};
@@ -72,7 +75,7 @@ var mapZoomToggleSpotMarkers = 15;
 
 var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-console.log('MAP JS - PRE');
+// console.log('MAP JS - PRE');
 
 function passRefs(r)
 {
@@ -105,9 +108,108 @@ function createMarker(width, height, radius, color)
   return canvas.toDataURL();
 }
 
+
+// TUTORIAL FUNCTIONS
+
+function sleep(ms)
+{
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+async function bannerReturn()
+{
+  // console.log("BANNER RETURN");
+  await sleep(3000);
+  $('#banner').animate({
+    'top': '-50px'
+  }, 700);
+}
+async function tutorialMain()
+{
+  // console.log("SHOW TUTORIAL");
+  await sleep(2000);
+  $('#banner').animate({
+    'top': '0px'
+  }, 700, function()
+  {
+    bannerReturn();
+  });
+}
+async function structureUserTutorialReturn()
+{
+  // console.log("STRUCT USER RETURN");
+  await sleep(3000);
+  $('#structure-user-tutorial').animate({
+    'width': '50px'
+  }, 700, function()
+  {
+    $('#structure-user-tutorial-text').css('visibility', 'hidden');
+  });
+}
+async function structureUserTutorialMain()
+{
+  // console.log("SHOW STRUCT USER TUTORIAL");
+  await sleep(2000);
+  $('#structure-user-tutorial').animate({
+    'width': '170px'
+  }, 700, function()
+  {
+    $('#structure-user-tutorial-text').css('visibility', 'visible');
+    structureUserTutorialReturn();
+  });
+}
+function tutorialScreen()
+{
+  var click = 0;
+  $('#tutorial-screen').css('visibility', 'visible');
+  $('#tutorial-main-text').css('visibility', 'visible');
+  $('#tutorial-screen').click(function()
+  {
+    // console.log("TUTORIAL SCREEN CLICKED");
+    if (click == 0)
+    {
+      $('#tutorial-main-text').css('visibility', 'hidden');
+      $('#tutorial-menu-text').css('visibility', 'visible');
+      click += 1;
+    }
+    else if (click == 1)
+    {
+      $('#tutorial-menu-text').css('visibility', 'hidden');
+      $('#tutorial-profile-text').css('visibility', 'visible');
+      click += 1;
+    }
+    else if (click == 2)
+    {
+      $('#tutorial-profile-text').css('visibility', 'hidden');
+      $('#tutorial-screen').css('visibility', 'hidden');
+      click = 0;
+    }
+  });
+}
+
+// COGNITO FUNCTIONS
+function cognitoLogin(fbResponse)
+{
+  // console.log('FB LOGIN AUTH IN PROCESS');
+  // console.log(fbResponse);
+  FB.api('/me', function(apiResponse)
+  {
+    // console.log(apiResponse);
+    // Store the token for secure access temporarily
+    serverToken = fbResponse.authResponse.accessToken;
+    // serverTokenExpiresAt = (Date.now() / 1000) + loginResponse.authResponse.expiresIn;
+
+    // Save the user profile name
+    facebookName = apiResponse.name
+    $('#profile-name').text(facebookName);
+
+    // Request Cognito credentials to perform secure requests
+    requestCognitoCredentials(fbResponse.authResponse.userID, serverToken);
+  });
+}
+
 function initMap()
 {
-  console.log('MAP JS - MAP INIT');
+  // console.log('MAP JS - MAP INIT');
   map = new google.maps.Map(document.getElementById('map'),
   {
     center: {lat: 29.758624, lng: -95.366795},
@@ -143,11 +245,11 @@ function initMap()
 
   $(document).ready(function()
   {
-    console.log('MAP JS - DOC READY');
+    // console.log('MAP JS - DOC READY');
     $("#menu-toggle-traffic").css("background-image", 'url("img/icons/icon_traffic.png")');
-    $("#menu-toggle-structures").css("background-image", 'url("img/markers/marker_icon_structure.png")');
-    $("#menu-toggle-spots").css("background-image", 'url("img/markers/marker_icon_camera_yellow.png")');
-    $("#menu-toggle-hazards").css("background-image", 'url("img/icons/icon_hazard.png")');
+    $("#menu-toggle-structures").css("background-image", 'url("img/markers/marker_icon_structure.svg")');
+    $("#menu-toggle-spots").css("background-image", 'url("img/markers/marker_icon_camera_yellow.svg")');
+    $("#menu-toggle-hazards").css("background-image", 'url("img/icons/icon_hazard.svg")');
     $(".menu-toggle-check").css("background-image", 'url("img/icons/icon_check_orange.png")');
     $(".menu-filter-check").css("background-image", 'url("img/icons/icon_check_orange.png")');
 
@@ -159,10 +261,73 @@ function initMap()
     requestHazards();
     requestStructures();
 
+    // Initialize FB
+    window.fbAsyncInit = function()
+    {
+      FB.init({
+        appId            : '149434858974947',
+        autoLogAppEvents : true,
+        xfbml            : true,
+        version          : 'v2.11'
+      });
+
+      // Check the user's facebook login status
+      try
+      {
+        FB.getLoginStatus(function(response)
+        {
+          // console.log("FB GET LOGIN STATUS:");
+          // console.log(response);
+          if (response.status === 'connected')
+          {
+            // the user is logged in and has authenticated your
+            // app, and response.authResponse supplies
+            // the user's ID, a valid access token, a signed
+            // request, and the time the access token
+            // and signed request each expire
+            var uid = response.authResponse.userID;
+            var accessToken = response.authResponse.accessToken;
+            previouslyLoggedIn = true;
+            // console.log(uid, accessToken);
+            cognitoLogin(response);
+          }
+          else if (response.status === 'not_authorized')
+          {
+            // the user is logged in to Facebook,
+            // but has not authenticated your app
+            // tutorialMain();
+            tutorialScreen();
+          }
+          else
+          {
+            // the user isn't logged in to Facebook.
+            // tutorialMain();
+            tutorialScreen();
+          }
+       });
+      }
+      catch (e)
+      {
+        console.log("FB LOGIN STATUS CHECK ERROR:");
+        console.log(e);
+      }
+    };
+
+    (function(d, s, id)
+    {
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "https://connect.facebook.net/en_US/sdk.js";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));
+
+     tutorialMain();
+
     // Register the click events
     $("#map-menu-button").click(function()
     {
-      console.log("MAP MENU BUTTON CLICKED");
+      // console.log("MAP MENU BUTTON CLICKED");
       if (menuToggle)
       {
         $('#map-container').animate({
@@ -223,29 +388,14 @@ function initMap()
 
     $("#map-profile-button").click(function()
     {
-      console.log("MAP PROFILE BUTTON CLICKED");
+      // console.log("MAP PROFILE BUTTON CLICKED");
       try
       {
         FB.login(function(loginResponse)
         {
           if (loginResponse.authResponse)
           {
-            console.log('FB LOGIN AUTH IN PROCESS');
-            console.log(loginResponse);
-            FB.api('/me', function(apiResponse)
-            {
-              console.log(apiResponse);
-              // Store the token for secure access temporarily
-              serverToken = loginResponse.authResponse.accessToken;
-              // serverTokenExpiresAt = (Date.now() / 1000) + loginResponse.authResponse.expiresIn;
-
-              // Save the user profile name
-              facebookName = apiResponse.name
-              $('#profile-name').text(facebookName);
-
-              // Request Cognito credentials to perform secure requests
-              requestCognitoCredentials(loginResponse.authResponse.userID, serverToken);
-            });
+            cognitoLogin(loginResponse);
           }
           else
           {
@@ -305,10 +455,34 @@ function initMap()
       }
     });
 
+    $("#profile-logout").click(function()
+    {
+      // Close the profile view
+      $('#profile-container-all').animate({
+        'right': '-200px'
+      }, 200, function()
+      {
+        profileToggle = false;
+      });
+
+      // Log out the user
+      FB.logout();
+
+      // Clear the user data
+      userSkills = [];
+      $('#profile-image').css('background-image', '');
+      $('#profile-name').text('');
+
+      // Reset the map data
+      refreshCurrentData();
+      // hide the structure match info box
+      $('#map-structure-match-container').css('visibility', 'hidden');
+    });
+
     // Ensure that the data containers are closed when the map or menu are clicked
     $("#map").click(function()
     {
-      console.log("MAP CLICKED");
+      // console.log("MAP CLICKED");
       if (spotToggle && !markerClick && !circleClick)
       {
         $('#spot-container-all').animate({
@@ -349,7 +523,7 @@ function initMap()
     });
     $("#menu").click(function()
     {
-      console.log("MENU CLICKED");
+      // console.log("MENU CLICKED");
       if (spotToggle)
       {
         $('#spot-container-all').animate({
@@ -412,12 +586,21 @@ function initMap()
         structuresMapNull()
         menuStructureToggle = false;
         $('#menu-toggle-check-structures').css('visibility', 'hidden');
+
+        // hide the structure match info box
+        $('#map-structure-match-container').css('visibility', 'hidden');
       }
       else
       {
         structuresMapSet()
         menuStructureToggle = true;
         $('#menu-toggle-check-structures').css('visibility', 'visible');
+
+        // If needed, show the structure match info box
+        if (structureMatch)
+        {
+          $('#map-structure-match-container').css('visibility', 'visible');
+        }
       }
     });
 
@@ -544,13 +727,13 @@ function initMap()
   // If a structure detail is showing, and a repair is selected, show the repair screen
   $('body').on('click', '.repair-container', function ()
   {
-    console.log("REPAIR CLICKED");
+    // console.log("REPAIR CLICKED");
     var repairClicked = $(this).data("repair");
     var repairStageHtml = $(this).find('.repair-stage').clone();
     var repairIconHtml = $(this).find('img').clone();
 
-    console.log(repairStageHtml[0].outerHTML);
-    console.log(repairIconHtml[0].outerHTML);
+    // console.log(repairStageHtml[0].outerHTML);
+    // console.log(repairIconHtml[0].outerHTML);
 
     // Update the repair view header
     $('#repair-container-sub-header').html('');
@@ -562,9 +745,7 @@ function initMap()
         '<div class="repair-exit">&#x2715;</div>' +
       '</div>'
       $('#repair-container-sub-header').append(repairTitleInteriorHtml);
-    console.log(repairTitleInteriorHtml);
-
-
+    // console.log(repairTitleInteriorHtml);
 
     // Show the loading indicator
     $('#repair-container-loader').css('visibility', 'visible');
@@ -576,20 +757,20 @@ function initMap()
       }, 200, function()
       {
         repairToggle = true;
-        console.log(repairClicked);
-        console.log(lastStructureRepairs);
+        // console.log(repairClicked);
+        // console.log(lastStructureRepairs);
         // The last Structure selected should have the repair saved - find the exact repair clicked and request all images for that repair
         for (i = 0; i < lastStructureRepairs.length; i++)
         {
-          console.log(lastStructureRepairs[i].repair);
+          // console.log(lastStructureRepairs[i].repair);
           if (lastStructureRepairs[i].repair == repairClicked)
           {
             // Save the repair clicked
             lastRepairSelected = lastStructureRepairs[i];
-            console.log(lastStructureRepairs[i].repair_images);
+            // console.log(lastStructureRepairs[i].repair_images);
             for (img = 0; img < lastStructureRepairs[i].repair_images.length; img++)
             {
-              console.log(lastStructureRepairs[i].repair_images[img]);
+              // console.log(lastStructureRepairs[i].repair_images[img]);
               requestImageForKey(lastStructureRepairs[i].repair_images[img].image_id, lastStructureRepairs[i]);
             }
           }
@@ -614,15 +795,17 @@ function initMap()
 
   $('body').on('click', '.skill-container', function ()
   {
-    console.log("SKILL CLICKED");
+    // console.log("SKILL CLICKED");
     var skillClicked = $(this).data("skill");
 
     // Loop through the global user skill list to find the skill clicked, then change the level (increment)
     var skillLevelNew = 0;
+    var skillExists = false;
     for (s = 0; s < userSkills.length; s++)
     {
       if (userSkills[s].skill == skillClicked)
       {
+        skillExists = true;
         if (userSkills[s].level == 2)
         {
           skillLevelNew = 0;
@@ -633,6 +816,20 @@ function initMap()
         }
         userSkills[s].level = skillLevelNew
       }
+    }
+    // If the skill does not exist, add an entry
+    if (!skillExists)
+    {
+      // The skill was selected, so iterate the skill level
+      skillLevelNew += 1;
+
+      var newSkill = {};
+      newSkill['skill_id'] = userId + '-' + skillClicked;
+      newSkill['user_id'] = userId;
+      newSkill['skill'] = skillClicked;
+      newSkill['level'] = skillLevelNew;
+      newSkill['status'] = 'active';
+      userSkills.push(newSkill);
     }
 
     // Now refresh the list to show the change
@@ -660,10 +857,20 @@ function resetStructureContainer()
 // Refresh all data with currently downloaded data
 function refreshCurrentData()
 {
-  addSpots();
-  addSpotRequests();
-  addHazards();
-  addStructures();
+  if (menuSpotToggle)
+  {
+    addSpots();
+    addSpotRequests();
+  }
+  if (menuHazardToggle)
+  {
+    addHazards();
+  }
+
+  if (menuStructureToggle)
+  {
+    addStructures();
+  }
 }
 
 // Add Spots to the map
@@ -710,13 +917,15 @@ function addSpotCircleForSpot(spot)
     fillOpacity: 0.4,
     map: map,
     center: {lat: spot.lat, lng: spot.lng},
-    radius: 50
+    radius: 50,
+    optimized: false,
+    zIndex: 1
   });
 
   spotCircle.addListener('click', function()
   {
     circleClick = true;
-    console.log('CIRCLE: ' + spotCircle.getCenter());
+    // console.log('CIRCLE: ' + spotCircle.getCenter());
     map.setCenter(spotCircle.getCenter());
 
     // Request the Spot Content with image data
@@ -780,13 +989,15 @@ function addSpotMarkerForSpot(spot)
       // origin: new google.maps.Point(0, 0),
       anchor: new google.maps.Point(10, 10),
       // scaledSize: new google.maps.Size(25, 25)
-    }
+    },
+    optimized: false,
+    zIndex: 3
   });
 
   spotMarker.addListener('click', function()
   {
     markerClick = true;
-    console.log('MARKER: ' + spotMarker.getPosition());
+    // console.log('MARKER: ' + spotMarker.getPosition());
     map.setCenter(spotMarker.getPosition());
 
     // Request the Spot Content with image data
@@ -883,7 +1094,7 @@ function addSpotRequests()
   // Create a common infowindow for all markers
   var infowindow = new google.maps.InfoWindow(
     {
-      content: 'Photo Requested'
+      content: 'Photo Requested<br><br>APP ONLY: Take photos by location in the iPhone app.'
   });
 
   for (i = 0; i < allSpotRequests.length; i++)
@@ -893,11 +1104,19 @@ function addSpotRequests()
       var secondsOld = Math.floor(Date.now() / 1000) - allSpotRequests[i].timestamp;
       if (secondsOld <= menuFilterSeconds)
       {
+        var icon = {
+          url: 'img/markers/marker_icon_camera_yellow@3x.png',
+          scaledSize: new google.maps.Size(50, 50), // scaled size
+          origin: new google.maps.Point(0,0), // origin
+          anchor: new google.maps.Point(25,50) // anchor
+        };
         // console.log(allSpotRequests[i].lat)
         var spotRequestMarker = new google.maps.Marker({
           position: {lat: allSpotRequests[i].lat, lng: allSpotRequests[i].lng},
           map: map,
-          icon: 'img/markers/marker_icon_camera_yellow.png'
+          icon: icon,
+          optimized: false,
+          zIndex: 4
         });
 
         spotRequestMarker.addListener('click', function()
@@ -948,11 +1167,19 @@ function addHazards()
     var secondsOld = Math.floor(Date.now() / 1000) - allHazards[i].timestamp;
     if (secondsOld <= menuFilterSeconds)
     {
-      console.log(allHazards[i].lat)
+      // console.log(allHazards[i].lat)
+      var icon = {
+        url: 'img/icons/icon_hazard@3x.png',
+        scaledSize: new google.maps.Size(50,50), // scaled size
+        origin: new google.maps.Point(0,0), // origin
+        anchor: new google.maps.Point(25,50) // anchor
+      };
       var hazardMarker = new google.maps.Marker({
         position: {lat: allHazards[i].lat, lng: allHazards[i].lng},
         map: map,
-        icon: 'img/icons/icon_hazard.png'
+        icon: icon,
+        optimized: false,
+        zIndex: 2
       });
 
       hazardMarker.addListener('click', function()
@@ -998,7 +1225,7 @@ function addStructures()
     var secondsOld = Math.floor(Date.now() / 1000) - allStructures[i].timestamp;
     if (secondsOld <= menuFilterSeconds)
     {
-      console.log(allStructures[i].lat)
+      // console.log(allStructures[i].lat)
       filteredStructures.push(allStructures[i]);
 
       addMarkerForStructure(allStructures[i]);
@@ -1012,16 +1239,61 @@ function addMarkerForStructure(structure)
 {
   // NOTE:  No need to check the time filter - the timestamp should already have been checked before this function is called
 
+  // console.log("ADDING STRUCTURE MARKER");
+  // Check whether the structure has a repair that matches the user's skill (if logged in)
+  // Reset the skill match toggle variable
+  structureMatch = false;
+  var iconImage = 'img/markers/marker_icon_structure@3x.png';
+  var iconSize = 50;
+  for (s = 0; s < userSkills.length; s++)
+  {
+    for (r = 0; r < structure.repairs.length; r++)
+    {
+      var thisRepair = structure.repairs[r].repair
+      for (sk = 0; sk < repairSettings.types[thisRepair].skills.length; sk++)
+      {
+        if (userSkills[s].skill == repairSettings.types[thisRepair].skills[sk] && userSkills[s].level > 0)
+        {
+          // Use the skill-matching structure icon
+          iconImage = 'img/markers/marker_icon_structure_skill_match@3x.png';
+          iconSize = 70;
+
+          // At least one structure was matched to the user's skills, so show the info box
+          structureMatch = true;
+        }
+      }
+    }
+  }
+
+  // If needed, show the structure match info box
+  if (structureMatch)
+  {
+    // console.log("DISPLAY STRUCTURE MATCH INFO BOX");
+    $('#map-structure-match-container').css('visibility', 'visible');
+  }
+  else
+  {
+    $('#map-structure-match-container').css('visibility', 'hidden');
+  }
+
+  var icon = {
+    url: iconImage,
+    scaledSize: new google.maps.Size(iconSize,iconSize), // scaled size
+    origin: new google.maps.Point(0,0), // origin
+    anchor: new google.maps.Point(iconSize/2,iconSize) // anchor
+  };
   var structureMarker = new google.maps.Marker({
     position: {lat: structure.lat, lng: structure.lng},
     map: map,
-    icon: 'img/markers/marker_icon_structure.png'
+    icon: icon,
+    optimized: false,
+    zIndex: 5
   });
 
   structureMarker.addListener('click', function()
   {
       structureClick = true;
-      console.log('MARKER: ' + structureMarker.getPosition());
+      // console.log('MARKER: ' + structureMarker.getPosition());
       //   map.setZoom(8);
       map.setCenter(structureMarker.getPosition());
 
@@ -1067,6 +1339,8 @@ function addMarkerForStructure(structure)
         {
           structureToggle = true;
           structureClick = false;
+
+          structureUserTutorialMain();
         });
       }
   });
@@ -1101,34 +1375,41 @@ function refreshSkillList()
   // 1 - Loop through the skill settings and find the next skill (in order)
   // 2 - Find the user's skill that matches that next skill setting
   // 3 - If the user's skill level is more than 0, add that skill html to the skill container
-  for (i = 0; i < Object.keys(skillSettings).length; i++)
+  for (i = 0; i < Object.keys(skillTypes).length; i++)
   {
-    $.each(skillSettings, function(sKey, sVal)
+    $.each(skillTypes, function(sKey, sVal)
     {
       if (sVal.order == i)
       {
+        // Assign the default skill level
+        var userSkillLevel = 0;
+        // Check whether the user has already registered the skill
         for (s = 0; s < userSkills.length; s++)
         {
           if (userSkills[s].skill == sKey)
           {
-            console.log("ADD SKILL: " + userSkills[s].skill + " WITH LEVEL: " + userSkills[s].level);
-            var skillHtml = '<div class="skill-container" data-skill="' + userSkills[s].skill + '">' +
-                '<div class="skill-stage" style="background-color:' + skillLevels[userSkills[s].level]['color'] +
-                '">' + userSkills[s].skill + '</div>' +
-                '<div class="skill-detail">' +
-                  '<img border="0" src="img/repairs/' + sVal.image + '" class="skill-icon">' +
-                  '<div class="skill-title">' + skillLevels[userSkills[s].level]['title'] + '</div>' +
-                '</div>' +
-              '</div>'
-            $('#user-skills-container').append(skillHtml);
+            userSkillLevel = userSkills[s].level;
           }
         }
+        // console.log("ADD SKILL: " + sKey + " WITH LEVEL: " + userSkillLevel);
+        var skillHtml = '<div class="skill-container" data-skill="' + sKey + '">' +
+            '<div class="skill-stage" style="background-color:' + skillLevels[userSkillLevel]['color'] +
+            '">' + sVal.title + '</div>' +
+            '<div class="skill-detail">' +
+              '<img border="0" src="img/repairs/' + sVal.image + '" class="skill-icon">' +
+              '<div class="skill-title">' + skillLevels[userSkillLevel]['title'] + '</div>' +
+            '</div>' +
+          '</div>'
+        $('#user-skills-container').append(skillHtml);
       }
     });
   }
 
   // Now hide the loader
   $('#profile-container-loader').css('visibility', 'hidden');
+
+  // Refresh the map data to ensure that any skill matching occurs
+  refreshCurrentData();
 }
 
 
@@ -1136,8 +1417,8 @@ function refreshSkillList()
 // Function to request Cognito credentials
 function requestCognitoCredentials(fbID, token)
 {
-  console.log("REQUESTING COGNITO CREDENTIALS");
-  console.log('ENDPOINT COGNITO: ' + refs['endpoint_cognito_id']);
+  // console.log("REQUESTING COGNITO CREDENTIALS");
+  // console.log('ENDPOINT COGNITO: ' + refs['endpoint_cognito_id']);
 
   var xhrHT = new XMLHttpRequest();
   xhrHT.open('POST', refs['endpoint_cognito_id'], true);
@@ -1159,16 +1440,16 @@ function requestCognitoCredentials(fbID, token)
   {
     if (xhrHT.readyState == XMLHttpRequest.DONE)
     {
-      console.log('COGNITO RESPONSE:');
+      // console.log('COGNITO RESPONSE:');
       // console.log(xhrHT.responseText.toString());
       var jsonResponse = JSON.parse(xhrHT.responseText);
-      console.log(jsonResponse);
+      // console.log(jsonResponse);
 
       userId = jsonResponse.user_data.user_id;
       facebookId = jsonResponse.user_data.facebook_id;
       cognitoId = jsonResponse.user_data.cognito_id;
 
-      $('#profile-image').css('background-image', 'url("http://graph.facebook.com/' + facebookId + '/picture?type=normal")');
+      $('#profile-image').css('background-image', 'url("https://graph.facebook.com/' + facebookId + '/picture?type=normal")');
 
       requestSkills(userId, cognitoId, serverToken);
     }
@@ -1178,8 +1459,8 @@ function requestCognitoCredentials(fbID, token)
 // Function to request a User's Skill data
 function requestSkills(uid, identityId, token)
 {
-  console.log("REQUESTING USER SKILLS");
-  console.log('ENDPOINT SKILLS: ' + refs['endpoint_skill_query']);
+  // console.log("REQUESTING USER SKILLS");
+  // console.log('ENDPOINT SKILLS: ' + refs['endpoint_skill_query']);
 
   // Clear the current skill list and show the loader
   $('#user-skills-container').html('');
@@ -1207,14 +1488,14 @@ function requestSkills(uid, identityId, token)
   {
     if (xhrHT.readyState == XMLHttpRequest.DONE)
     {
-      console.log('SKILLS RESPONSE:');
+      // console.log('SKILLS RESPONSE:');
       // console.log(xhrHT.responseText.toString());
       var jsonResponse = JSON.parse(xhrHT.responseText);
-      console.log(jsonResponse);
+      // console.log(jsonResponse);
 
       userSkills = jsonResponse.skills.user_skills;
       skillLevels = jsonResponse.skills.skill_levels;
-      skillSettings = jsonResponse.skills.skill_settings;
+      skillTypes = jsonResponse.skills.skill_types;
 
       refreshSkillList();
     }
@@ -1224,8 +1505,8 @@ function requestSkills(uid, identityId, token)
 // Function to update a skill's level
 function putSkillLevel(skill, level, uid, identityId, token)
 {
-  console.log("PUT USER SKILL LEVEL");
-  console.log('ENDPOINT SKILL PUT: ' + refs['endpoint_skill_put']);
+  // console.log("PUT USER SKILL LEVEL");
+  // console.log('ENDPOINT SKILL PUT: ' + refs['endpoint_skill_put']);
 
   var xhrHT = new XMLHttpRequest();
   xhrHT.open('POST', refs['endpoint_skill_put'], true);
@@ -1251,10 +1532,10 @@ function putSkillLevel(skill, level, uid, identityId, token)
   {
     if (xhrHT.readyState == XMLHttpRequest.DONE)
     {
-      console.log('SKILL PUT RESPONSE:');
+      // console.log('SKILL PUT RESPONSE:');
       // console.log(xhrHT.responseText.toString());
       var jsonResponse = JSON.parse(xhrHT.responseText);
-      console.log(jsonResponse);
+      // console.log(jsonResponse);
     }
   }
 }
@@ -1264,12 +1545,12 @@ function requestSpots()
 {
   // Show the loading indicator
   $('#map-loader').css('visibility', 'visible');
-  console.log("MAP LOADER VISIBLE");
+  // console.log("MAP LOADER VISIBLE");
   // Record the download request
   downloadingSpots = true;
 
-  console.log("REQUESTING SPOT DATA");
-  console.log('ENDPOINT SPOTS: ' + refs['endpoint_spot_query_active']);
+  // console.log("REQUESTING SPOT DATA");
+  // console.log('ENDPOINT SPOTS: ' + refs['endpoint_spot_query_active']);
   var timestamp_begin = 0;
 
   var xhrHT = new XMLHttpRequest();
@@ -1306,7 +1587,7 @@ function requestSpots()
       if (!downloadingStructures && !downloadingSpots && !downloadingHazards)
       {
           $('#map-loader').css('visibility', 'hidden');
-          console.log("MAP LOADER HIDDEN");
+          // console.log("MAP LOADER HIDDEN");
       }
     }
   }
@@ -1317,10 +1598,10 @@ function requestSpotContentFor(spotId)
 {
   // Show the loading indicator
   $('#spot-container-loader').css('visibility', 'visible');
-  console.log("SPOT LOADER VISIBLE");
+  // console.log("SPOT LOADER VISIBLE");
 
-  console.log("REQUESTING SPOT CONTENT DATA");
-  console.log('ENDPOINT SPOT CONTENT: ' + refs['endpoint_spot_content_query']);
+  // console.log("REQUESTING SPOT CONTENT DATA");
+  // console.log('ENDPOINT SPOT CONTENT: ' + refs['endpoint_spot_content_query']);
   var timestamp_begin = 0;
 
   var xhrHT = new XMLHttpRequest();
@@ -1347,7 +1628,7 @@ function requestSpotContentFor(spotId)
 
           // console.log(xhrHT.responseText.toString());
           var jsonResponse = JSON.parse(xhrHT.responseText);
-          console.log(jsonResponse);
+          // console.log(jsonResponse);
 
           // Clear the content from the spot container
           $('#spot-container').html('');
@@ -1355,9 +1636,9 @@ function requestSpotContentFor(spotId)
           // Add the content associated with the current spot marker to the container
           for (s = 0; s < jsonResponse.spot_content.length; s++)
           {
-            console.log(jsonResponse.spot_content[s]);
+            // console.log(jsonResponse.spot_content[s]);
             var contentDatetime = new Date(jsonResponse.spot_content[s].timestamp * 1000);
-            console.log(contentDatetime);
+            // console.log(contentDatetime);
             contentTime = dateFormat(contentDatetime);
             // var contentHtml = '<img border="0" src="' + jsonResponse.spot_content[s].image_url + '" class="content-image content-image-' + jsonResponse.spot_content[s].content_id + '" data-element-category="content-image" data-element-id="content-image-' + jsonResponse.spot_content[s].content_id + '">'
             var contentHtml = '<div class="content-image-container">' +
@@ -1393,12 +1674,12 @@ function requestHazards()
 {
   // Show the loading indicator
   $('#map-loader').css('visibility', 'visible');
-  console.log("MAP LOADER VISIBLE");
+  // console.log("MAP LOADER VISIBLE");
   // Record the download request
   downloadingHazards = true;
 
-  console.log("REQUESTING HAZARD DATA");
-  console.log('ENDPOINT HAZARDS: ' + refs['endpoint_hazard_query_active']);
+  // console.log("REQUESTING HAZARD DATA");
+  // console.log('ENDPOINT HAZARDS: ' + refs['endpoint_hazard_query_active']);
   var timestamp_begin = 0;
 
   var xhrHT = new XMLHttpRequest();
@@ -1433,7 +1714,7 @@ function requestHazards()
       if (!downloadingStructures && !downloadingSpots && !downloadingHazards)
       {
           $('#map-loader').css('visibility', 'hidden');
-          console.log("MAP LOADER HIDDEN");
+          // console.log("MAP LOADER HIDDEN");
       }
     }
   }
@@ -1444,12 +1725,12 @@ function requestStructures()
 {
   // Show the loading indicator
   $('#map-loader').css('visibility', 'visible');
-  console.log("MAP LOADER VISIBLE");
+  // console.log("MAP LOADER VISIBLE");
   // Record the download request
   downloadingStructures = true;
 
-  console.log("REQUESTING STRUCTURE DATA");
-  console.log('ENDPOINT STRUCTURES: ' + refs['endpoint_structure_query']);
+  // console.log("REQUESTING STRUCTURE DATA");
+  // console.log('ENDPOINT STRUCTURES: ' + refs['endpoint_structure_query']);
   var timestamp_begin = 0;
 
   var xhrHT = new XMLHttpRequest();
@@ -1462,7 +1743,7 @@ function requestStructures()
   xhrHT.onerror = function()
   {
     console.log("XHR ERROR")
-
+    console.log(xhrHT.responseText.toString());
     // DEV CHECK BEFORE PROD
     // // The error might be a CORS error (www) - redirect?
     // window.location = domain;
@@ -1476,7 +1757,8 @@ function requestStructures()
 
       // console.log(xhrHT.responseText.toString());
       var jsonResponse = JSON.parse(xhrHT.responseText);
-      // console.log(jsonResponse.structures);
+      // console.log(jsonResponse);
+      repairSettings = jsonResponse.repair_settings;
       allStructures = jsonResponse.structures;
       addStructures();
 
@@ -1484,7 +1766,7 @@ function requestStructures()
       if (!downloadingStructures && !downloadingSpots && !downloadingHazards)
       {
           $('#map-loader').css('visibility', 'hidden');
-          console.log("MAP LOADER HIDDEN");
+          // console.log("MAP LOADER HIDDEN");
       }
     }
   }
@@ -1493,10 +1775,10 @@ function requestStructures()
 // Function to request Repair data for a Structure
 function requestRepairsForStructure(structure)
 {
-  console.log("STRUCTURE LOADER VISIBLE");
+  // console.log("STRUCTURE LOADER VISIBLE");
 
-  console.log("REQUESTING REPAIR DATA");
-  console.log('ENDPOINT REPAIR: ' + refs['endpoint_repair_query']);
+  // console.log("REQUESTING REPAIR DATA");
+  // console.log('ENDPOINT REPAIR: ' + refs['endpoint_repair_query']);
 
   var xhrHT = new XMLHttpRequest();
   xhrHT.open('POST', refs['endpoint_repair_query'], true);
@@ -1520,7 +1802,7 @@ function requestRepairsForStructure(structure)
     {
       // console.log(xhrHT.responseText.toString());
       var jsonResponse = JSON.parse(xhrHT.responseText);
-      console.log(jsonResponse);
+      // console.log(jsonResponse);
       repairSettings = jsonResponse.repair_settings;
       var allRepairs = jsonResponse.repairs;
 
@@ -1535,12 +1817,12 @@ function requestRepairsForStructure(structure)
           {
               // requestImageForKey(jsonResponse.request.structure.users[0].user_id, structure);
               $('#structure-user').html('');
-              $('#structure-user').css('background-image', 'url("http://graph.facebook.com/' + jsonResponse.request.structure.users[0].facebook_id + '/picture?type=normal")');
+              $('#structure-user').css('background-image', 'url("https://graph.facebook.com/' + jsonResponse.request.structure.users[0].facebook_id + '/picture?type=normal")');
 
-              // $('<img/>').attr('src', "http://graph.facebook.com/' + jsonResponse.request.structure.users[0].facebook_id + '/picture?type=normal").on('load', function()
+              // $('<img/>').attr('src', "https://graph.facebook.com/' + jsonResponse.request.structure.users[0].facebook_id + '/picture?type=normal").on('load', function()
               // {
               //    $(this).remove(); // prevent memory leaks
-              //    $('#structure-user').css('background-image', 'url("http://graph.facebook.com/' + jsonResponse.request.structure.users[0].facebook_id + '/picture?type=normal")');
+              //    $('#structure-user').css('background-image', 'url("https://graph.facebook.com/' + jsonResponse.request.structure.users[0].facebook_id + '/picture?type=normal")');
               //
               //    // Hide the loading indicator
               //    $('#structure-user-loader').css('visibility', 'hidden');
@@ -1550,13 +1832,13 @@ function requestRepairsForStructure(structure)
               lastStructureSelectedUserLink = jsonResponse.request.structure.users[0].user_fb_url;
           }
 
-          console.log("ADD REPAIRS");
+          // console.log("ADD REPAIRS");
           // Reset the repair container
           $('#structure-repair-container').html('');
 
           // Save the last clicked Structure's repairs
           lastStructureRepairs = jsonResponse.repairs;
-          console.log(jsonResponse.repair_settings);
+          // console.log(jsonResponse.repair_settings);
           // Add the repairs to the list
           // Loop through the repair settings list as many times as it is long to find each in order
           // for (order = 0; order < jsonResponse.repair_settings.length; order++)
@@ -1579,7 +1861,7 @@ function requestRepairsForStructure(structure)
                   // Only stages greater than 0 have been added
                   if (jsonResponse.repairs[r].repair == repair && jsonResponse.repairs[r].stage > 0)
                   {
-                    console.log("ADD REPAIR: " + jsonResponse.repairs[r].repair + " WITH STAGE: " + jsonResponse.repair_settings.stages[jsonResponse.repairs[r].stage]['title']);
+                    // console.log("ADD REPAIR: " + jsonResponse.repairs[r].repair + " WITH STAGE: " + jsonResponse.repair_settings.stages[jsonResponse.repairs[r].stage]['title']);
                     var repairHtml = '<div class="repair-container" data-repair="' + jsonResponse.repairs[r].repair + '">' +
                         '<div class="repair-stage" style="background-color:' + jsonResponse.repair_settings.stages[jsonResponse.repairs[r].stage]['color'] +
                           '">' + jsonResponse.repair_settings.stages[jsonResponse.repairs[r].stage]['title'] + '</div>' +
@@ -1607,8 +1889,8 @@ function requestRepairsForStructure(structure)
 // Function to request any Lambda image based off of the object key
 function requestImageForKey(imageKey, entityData)
 {
-  console.log("REQUESTING IMAGE DATA");
-  console.log('ENDPOINT IMAGE: ' + refs['endpoint_image_data']);
+  // console.log("REQUESTING IMAGE DATA");
+  // console.log('ENDPOINT IMAGE: ' + refs['endpoint_image_data']);
 
   var xhrHT = new XMLHttpRequest();
   xhrHT.open('POST', refs['endpoint_image_data'], true);
@@ -1630,19 +1912,19 @@ function requestImageForKey(imageKey, entityData)
   {
     if (xhrHT.readyState == XMLHttpRequest.DONE)
     {
-        console.log("IMAGE DATA FOR: " + imageKey + ":");
+        // console.log("IMAGE DATA FOR: " + imageKey + ":");
         // console.log(xhrHT.responseText.toString());
         var jsonResponse = JSON.parse(xhrHT.responseText);
-        console.log(jsonResponse);
+        // console.log(jsonResponse);
 
         // Determine if the data should still be displayed (the item was the last selected, and where the image should be placed)
         if (jsonResponse.request.entity_data.hasOwnProperty('repair_id'))
         {
-            console.log("REPAIR IMAGE RETURNED");
+            // console.log("REPAIR IMAGE RETURNED");
             // Entity is a repair image - determine if it belongs to the last selected
             if (lastRepairSelected.repair_id == jsonResponse.request.entity_data.repair_id)
             {
-                console.log(jsonResponse.image_data);
+                // console.log(jsonResponse.image_data);
                 // The repair matches, so add the image to the repair screen_popup
                 var imgHtml = '<div class="repair-image-container-sub">' +
                   '<img border="0" src="data:image/jpeg;charset=utf-8;base64, ' + jsonResponse.image_data.image + '" class="repair-image">'
@@ -1655,11 +1937,11 @@ function requestImageForKey(imageKey, entityData)
         }
         else if (jsonResponse.request.entity_data.hasOwnProperty('structure_id'))
         {
-            console.log("STRUCTURE IMAGE RETURNED");
+            // console.log("STRUCTURE IMAGE RETURNED");
             // Entity is a structure image - determine if it belongs to the last selected
             if (lastStructureSelected.structure_id == jsonResponse.request.entity_data.structure_id)
             {
-                console.log(jsonResponse.image_data);
+                // console.log(jsonResponse.image_data);
                 // Add the structure image to the element in the display container
                 var img = new Image();
                 img.src = "data:image/jpeg;charset=utf-8;base64, " + jsonResponse.image_data.image;
@@ -1673,7 +1955,7 @@ function requestImageForKey(imageKey, entityData)
   }
 }
 
-// http://graph.facebook.com/10111370082136134/picture?type=normal
+// https://graph.facebook.com/10111370082136134/picture?type=normal
 // function downloadFbImage(fbId)
 // {
 //   console.log("DOWNLOADING FB IMAGE FOR USER: " + fbId);

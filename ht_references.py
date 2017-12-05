@@ -4,7 +4,7 @@ from boto3.dynamodb.conditions import Key, Attr
 from flask import Flask, send_from_directory, url_for
 from flask_assets import Bundle
 
-app_stage = 'local' # prod, dev, local
+app_stage = 'prod' # prod, dev, local
 
 app_state_name = 'prod'
 app_debug = False
@@ -37,8 +37,9 @@ if app_stage == 'dev':
 elif app_stage == 'local':
   app_state_name = 'dev'
   app_debug = True
+  # domain = 'http://0.0.0.0:5000/'
   # domain = 'http://127.0.0.1:5000/'
-  domain = 'http://192.168.1.8:5000/'
+  domain = 'http://192.168.1.7:5000/'
 
 # folder_spot_image = 'https://s3.amazonaws.com/harvey-media/'
 folder_spot_image = 'harvey-media'
@@ -124,25 +125,25 @@ table_hazard_index = 'status-timestamp-index'
 table_shelter_index = 'status-index'
 table_hydrologic_index = 'gauge_id-status-index'
 
-skill_list = {
-  'mucking' : {'order':1, 'image':'mucking.png'}
-  , 'electrical' : {'order':2, 'image':'electrical.png'}
-  , 'plumbing' : {'order':3, 'image':'plumbing.png'}
-  , 'framing' : {'order':4, 'image':'framing.png'}
-  , 'concrete' : {'order':5, 'image':'concrete.png'}
-  , 'sheetrock' : {'order':6, 'image':'sheetrock.png'}
-  , 'texturing' : {'order':7, 'image':'texturing.png'}
-  , 'painting' : {'order':8, 'image':'painting.png'}
-  , 'tiling' : {'order':9, 'image':'tile.png'}
-  , 'cabinetry' : {'order':10, 'image':'cabinetry.png'}
-  , 'roofing' : {'order':11, 'image':'roof.png'}
-  , 'fencing' : {'order':12, 'image':'fence.png'}
-  , 'windows' : {'order':13, 'image':'window.png'}
-  , 'fixtures' : {'order':14, 'image':'fixture.png'}
-  , 'appliances' : {'order':15, 'image':'appliance.png'}
-  , 'landscaping' : {'order':16, 'image':'landscaping.png'}
-  , 'general woodworking' : {'order':17, 'image':'Harvey.png'}
-  , 'heavy lifting' : {'order':18, 'image':'Harvey.png'}
+skill_types = {
+  'mucking' : {'title':'mucking', 'order':1, 'image':'mucking.png'}
+  , 'electrical' : {'title':'electrical', 'order':2, 'image':'electrical.png'}
+  , 'plumbing' : {'title':'plumbing', 'order':3, 'image':'plumbing.png'}
+  , 'framing' : {'title':'framing', 'order':4, 'image':'framing.png'}
+  , 'concrete' : {'title':'concrete', 'order':5, 'image':'concrete.png'}
+  , 'sheetrock' : {'title':'sheetrock repair', 'order':6, 'image':'sheetrock.png'}
+  , 'texturing' : {'title':'texturing', 'order':7, 'image':'texturing.png'}
+  , 'painting' : {'title':'painting', 'order':8, 'image':'painting.png'}
+  , 'tiling' : {'title':'tiling', 'order':9, 'image':'tile.png'}
+  , 'cabinetry' : {'title':'cabinetry', 'order':10, 'image':'cabinetry.png'}
+  , 'roofing' : {'title':'roofing', 'order':11, 'image':'roof.png'}
+  , 'fencing' : {'title':'building fences', 'order':12, 'image':'fence.png'}
+  , 'windows' : {'title':'installing windows', 'order':13, 'image':'window.png'}
+  , 'fixtures' : {'title':'installing fixtures', 'order':14, 'image':'fixture.png'}
+  , 'appliances' : {'title':'repairing appliances', 'order':15, 'image':'appliance.png'}
+  , 'landscaping' : {'title':'landscaping', 'order':16, 'image':'landscaping.png'}
+  # , 'general woodworking' : {'order':17, 'image':'Harvey.png'}
+  # , 'heavy lifting' : {'order':18, 'image':'Harvey.png'}
 }
 skill_levels = {
   0 : {'title':'No Experience', 'color':'#CCCCCC'}
@@ -150,24 +151,42 @@ skill_levels = {
   , 2 : {'title':'Expert', 'color':'#44A9DF'}
 }
 repair_types = {
-  'mucking' : {'order':1, 'image':'mucking.png'}
-  , 'electrical replacement' : {'order':2, 'image':'electrical.png'}
-  , 'plumbing patching' : {'order':3, 'image':'plumbing.png'}
-  , 'framing repair' : {'order':4, 'image':'framing.png'}
-  , 'concrete patching' : {'order':5, 'image':'concrete.png'}
-  , 'sheetrock replacement' : {'order':6, 'image':'sheetrock.png'}
-  , 'sheetrock texturing' : {'order':7, 'image':'texturing.png'}
-  , 'interior painting' : {'order':8, 'image':'painting.png'}
-  , 'tile laying' : {'order':9, 'image':'tile.png'}
-  , 'cabinetry installation' : {'order':10, 'image':'cabinetry.png'}
-  , 'roof repair' : {'order':11, 'image':'roof.png'}
-  , 'fence construction' : {'order':12, 'image':'fence.png'}
-  , 'window installation' : {'order':13, 'image':'window.png'}
-  , 'exterior painting' : {'order':14, 'image':'painting.png'}
-  , 'fixture installation' : {'order':15, 'image':'fixture.png'}
-  , 'appliance repair or installation' : {'order':16, 'image':'appliance.png'}
-  , 'landscaping' : {'order':17, 'image':'landscaping.png'}
+  'mucking' : {'title':'mucking', 'order':1, 'image':'mucking.png'
+               , 'skills': ['mucking']}
+  , 'electrical' : {'title':'electrical replacement', 'order':2, 'image':'electrical.png'
+               , 'skills': ['electrical']}
+  , 'plumbing' : {'title':'plumbing patching', 'order':3, 'image':'plumbing.png'
+               , 'skills': ['plumbing']}
+  , 'framing' : {'title':'framing repair', 'order':4, 'image':'framing.png'
+               , 'skills': ['framing']}
+  , 'concrete' : {'title':'concrete patching', 'order':5, 'image':'concrete.png'
+               , 'skills': ['concrete']}
+  , 'sheetrock01' : {'title':'sheetrock repair', 'order':6, 'image':'sheetrock.png'
+               , 'skills': ['sheetrock']}
+  , 'sheetrock02' : {'title':'sheetrock texturing', 'order':7, 'image':'texturing.png'
+               , 'skills': ['texturing']}
+  , 'painting01' : {'title':'interior painting', 'order':8, 'image':'painting.png'
+               , 'skills': ['painting']}
+  , 'tile' : {'title':'tile laying', 'order':9, 'image':'tile.png'
+               , 'skills': ['tiling']}
+  , 'cabinets' : {'title':'cabinet installation', 'order':10, 'image':'cabinetry.png'
+               , 'skills': ['cabinetry']}
+  , 'roof' : {'title':'roof repair', 'order':11, 'image':'roof.png'
+               , 'skills': ['roofing']}
+  , 'fence' : {'title':'fence construction', 'order':12, 'image':'fence.png'
+               , 'skills': ['fencing']}
+  , 'window' : {'title':'window installation', 'order':13, 'image':'window.png'
+               , 'skills': ['windows']}
+  , 'painting02' : {'title':'exterior painting', 'order':14, 'image':'painting.png'
+               , 'skills': ['painting']}
+  , 'fixture' : {'title':'fixture installation', 'order':15, 'image':'fixture.png'
+               , 'skills': ['fixtures']}
+  , 'appliance' : {'title':'appliance repair / install', 'order':16, 'image':'appliance.png'
+               , 'skills': ['appliances']}
+  , 'landscaping' : {'title':'landscaping', 'order':17, 'image':'landscaping.png'
+               , 'skills': ['landscaping']}
 }
+# REPAIR STAGES ARE HARD-CODED IN THE APP
 repair_stages = {
   0 : {'title':'na', 'color':'#FFFFFF'}
   , 1 : {'title':'need help', 'color':'#B34700'}
@@ -175,7 +194,7 @@ repair_stages = {
   , 3 : {'title':'complete', 'color':'#248F24'}
   , 4 : {'title':'other', 'color':'#1A1A1A'}
 }
-repair_list = {
+repair_settings = {
   'types' : repair_types
   , 'stages' : repair_stages
 }

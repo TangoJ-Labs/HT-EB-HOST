@@ -209,6 +209,7 @@ def app_structure_query():
     query_response = util.structure_query(body)
     if query_response['result'] == 'success':
       response['structures'] = query_response['structures']
+      response['repair_settings'] = ht_references.repair_settings
       response['response'] = 'success'
   return jsonify(response)
 
@@ -226,6 +227,23 @@ def app_structure_put():
     util = importlib.import_module('..v' + app_version_mod + '.ht_app_lib_util', 'app.subpkg')
     structure_put_response = util.structure_put(body)
     if structure_put_response['response'] == 'success':
+      response['response'] = 'success'
+  return jsonify(response)
+
+# DELETE A STRUCTURE
+bp_app_structure_delete = Blueprint('bp_app_structure_delete', __name__)
+@bp_app_structure_delete.route('/app/structure/delete', methods=['POST'])
+def app_structure_delete():
+  print("ROUTE: STRUCTURE DELETE")
+  # Retrieve the POST json parameters
+  body = request.get_json(force=True)
+  # Prep the response and fire the appropriate version of the function
+  response = {'response' : 'failure'}
+  if 'app_version' in body:
+    app_version_mod = body['app_version'].replace('.', '_')
+    util = importlib.import_module('..v' + app_version_mod + '.ht_app_lib_util', 'app.subpkg')
+    structure_delete_response = util.structure_delete(body)
+    if structure_delete_response['response'] == 'success':
       response['response'] = 'success'
   return jsonify(response)
 
@@ -277,7 +295,7 @@ def app_repair_query():
     query_response = util.repair_query(body)
     if query_response['result'] == 'success':
       response['repairs'] = query_response['repairs']
-      response['repair_settings'] = ht_references.repair_list
+      response['repair_settings'] = ht_references.repair_settings
       response['response'] = 'success'
   return jsonify(response)
 

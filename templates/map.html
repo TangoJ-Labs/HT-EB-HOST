@@ -64,13 +64,15 @@
 	</head>
 	<body>
     <div id="banner">
-      <div id="map-menu-button"></div>
+      <div id="map-menu-button">
+        <img id="map-menu-button-icon" border="0" src="img/icons/icon_menu_white.svg">
+      </div>
       <div id="banner-container">
-        <!-- <div id="banner-text">APP ONLY: Add your damaged home or your volunteer skills.</div> -->
+        <div id="banner-text">APP ONLY: Download the app for extra features!</div>
         <a href="https://itunes.apple.com/us/app/harveytown/id1278667479" target="_blank"><img id="app-store-icon" border="0" src="img/app_store_white.svg"></a>
       </div>
       <div id="map-profile-button">
-        <img id="map-profile-button-icon" border="0" src="img/icons/icon_profile.svg">
+        <img id="map-profile-button-icon" border="0" src="img/icons/icon_profile_white.svg">
       </div>
     </div>
 		<div id="everything">
@@ -119,6 +121,10 @@
 			<div id="map-container">
                 <div id="map-loader"></div>
 				<div id="map"></div>
+        <div id="map-structure-match-container">
+          <img id="map-structure-match-icon" border="0" src="img/markers/marker_icon_structure_skill_match.svg">
+          <div id="map-structure-match-text">These home repairs match your skills.</div>
+        </div>
 			</div>
       <div class="data-container-all" id="spot-container-all">
           <div class="data-container" id="spot-container"></div>
@@ -128,6 +134,10 @@
           <div class="data-container" id="structure-container">
     				<div id="structure-image">
               <div class="image-loader" id="structure-image-loader"></div>
+            </div>
+            <div id="structure-user-tutorial">
+              <div id="structure-user-tutorial-text">Contact this user to schedule a repair time.</div>
+              <!-- <div id="structure-user-tutorial-text">&#x2192;</div> -->
             </div>
     				<div id="structure-user">&#x1F4AC;</div>
     				<div id="structure-repair-container"></div>
@@ -141,6 +151,7 @@
       </div>
       <div class="data-container-all" id="profile-container-all">
           <div class="data-container" id="profile-container">
+            <div id="profile-logout">Log<br>out</div>
             <div id="profile-image"></div>
             <div id="profile-name"></div>
             <div id="user-data-container">
@@ -159,9 +170,20 @@
           </div>
           <div class="data-container-loader" id="profile-container-loader"></div>
       </div>
+      <div id="tutorial-screen">
+        <div id="tutorial-main-text">Welcome to Harveytown!
+          <br><br><br>Hundreds of Southeast Texas families are still displaced from their homes due to Hurricane Harvey.
+          <br><br>Create a volunteer profile to find homes needing repairs that match your skill set.
+          <br><br>Download the app to add a house needing repairs and to take photos by location.
+        </div>
+        <div id="tutorial-menu-text">&nbsp;&nbsp;&nbsp;&#x2191;<br><br>Use the menu to select map viewing options.</div>
+        <div id="tutorial-profile-text">&#x2191;&nbsp;&nbsp;&nbsp;<br><br>Sign in using Facebook to add your skills and view matching homes needing repairs.
+          <br><br>Harveytown will never post to Facebook without your approval.
+        </div>
+      </div>
 		</div>
 	</body>
-  <script>
+  <!-- <script>
     window.fbAsyncInit = function()
     {
       FB.init({
@@ -180,5 +202,5 @@
        js.src = "https://connect.facebook.net/en_US/sdk.js";
        fjs.parentNode.insertBefore(js, fjs);
      }(document, 'script', 'facebook-jssdk'));
-  </script>
+  </script> -->
 </html>

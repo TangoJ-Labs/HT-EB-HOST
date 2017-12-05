@@ -25,7 +25,7 @@ import ht_lib_admin
 def api_settings():
   settings = {
     'skill_list' : ht_references.skill_list
-    , 'repair_list' : ht_references.repair_list
+    , 'repair_types' : ht_references.repair_types
   }
   return settings
 
@@ -156,7 +156,7 @@ def skill_query(body):
   )
   response['user_skills'] = skill_response['Items']
   response['skill_levels'] = ht_references.skill_levels
-  response['skill_settings'] = ht_references.skill_list
+  response['skill_types'] = ht_references.skill_types
   return response
 
 def skill_put(body):
@@ -203,6 +203,11 @@ def structure_query(body):
     response['result'] = 'success'
     structure_dict = []
     for structure in structure_response['Items']:
+      # Add the structure repairs
+      repair_response = repair_query(structure)
+      if repair_response['result'] == 'success':
+        structure['repairs'] = repair_response['repairs']
+      # Add the structure users
       structure_user_body = {
         'structure_id' : structure['structure_id']
       }
@@ -240,7 +245,7 @@ def structure_user_query(body):
 
 def repair_query(structure):
   # Create a default response
-  response = {'response' : 'failure'}
+  response = {'result' : 'failure'}
   repairs = []
   # If a structure id was passed, only return the specific structure data, otherwise
   # return all active repairs for the passed structure data

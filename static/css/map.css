@@ -23,13 +23,63 @@ html {
   clear: both;
 }
 
+#tutorial-screen {
+  z-index: 9001;
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  /*background-color: #1A1A1A;
+  opacity: 0.5;*/
+  background: rgba(26,26,26,0.7);
+  visibility: hidden;
+}
+#tutorial-main-text {
+  position: fixed;
+	height: 100px;
+	width: 200px;
+	left: calc(50% - 100px);
+	top: 100px;
+  color: white;
+	font-size: 22px;
+	font-weight: 200;
+	line-height: 24px;
+  text-align: center;
+  visibility: hidden;
+}
+#tutorial-menu-text {
+  position: fixed;
+	height: 100px;
+	width: 150px;
+	left: 5px;
+	top: 55px;
+  color: white;
+	font-size: 24px;
+	font-weight: 200;
+	line-height: 26px;
+  text-align: left;
+  visibility: hidden;
+}
+#tutorial-profile-text {
+  position: fixed;
+	height: 100px;
+	width: 150px;
+	right: 5px;
+	top: 55px;
+  color: white;
+	font-size: 24px;
+	font-weight: 200;
+	line-height: 26px;
+  text-align: right;
+  visibility: hidden;
+}
+
 #banner {
   z-index: 1001;
   position: fixed;
-  height: 50px;
+  height: 100px;
 	width: 100%;
 	margin: 0;
-  top: 0px;
+  top: -50px;
   left: 0px;
   background-color: #EB6D24;
   -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
@@ -38,27 +88,31 @@ html {
 }
 #banner-container {
   position: relative;
-  height: 50px;
-	width: 140px;
+  height: 100px;
+	width: 200px;
   margin-top: 0px;
-  margin-left: calc(50% - 70px);
+  margin-left: calc(50% - 100px);
+  /*background-color: red;*/
 }
 #banner-text {
 	position: absolute;
 	height: 40px;
-	width: 160px;
-	left: 5px;
+	width: 180px;
+	left: 10px;
 	top: 5px;
+  /*background-color: blue;*/
+  color: white;
 	font-size: 15px;
 	font-weight: 200;
 	line-height: 20px;
+  text-align: center;
 }
 #app-store-icon {
   position: absolute;
   height: 40px;
 	width: 120px;
-  top: 5px;
-  left: 10px;
+  top: 55px;
+  left: 40px;
   cursor: pointer;
 }
 
@@ -91,6 +145,41 @@ html {
 	width: 100%;
     /*overflow-y: hidden;*/
 }
+#map-structure-match-container {
+  z-index: 300;
+	position: absolute;
+	height: 40px;
+	width: 140px;
+	left: 10px;
+	top: 5px;
+	background-color: white;
+	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+	cursor: pointer;
+  visibility: hidden;
+}
+#map-structure-match-icon {
+  position: absolute;
+	height: 36px;
+	width: 36px;
+	left: 2px;
+	top: 2px;
+	/*background-color: gray;*/
+	background-position: center;
+	background-size: contain;
+	background-repeat: no-repeat;
+}
+#map-structure-match-text {
+  position: absolute;
+	height: 30px;
+	width: 90px;
+	left: 45px;
+	top: 5px;
+	font-size: 14px;
+	font-weight: 200;
+	line-height: 15px;
+}
 #menu {
 	z-index: 100;
 	position: fixed;
@@ -106,12 +195,23 @@ html {
 	height: 40px;
 	width: 40px;
 	left: 10px;
-	top: 5px;
-	background-color: white;
+	top: 55px;
+	/*background-color: white;
 	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);*/
 	cursor: pointer;
+}
+#map-menu-button-icon {
+  position: absolute;
+	height: 36px;
+	width: 36px;
+	left: 2px;
+	top: 2px;
+	/*background-color: gray;*/
+	background-position: center;
+	background-size: contain;
+	background-repeat: no-repeat;
 }
 #map-profile-button {
 	z-index: 300;
@@ -119,7 +219,7 @@ html {
 	height: 40px;
 	width: 40px;
 	right: 10px;
-	top: 5px;
+	top: 55px;
 	/*background-color: white;*/
 	/*-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
@@ -349,6 +449,26 @@ html {
   text-align: left;
 }
 
+#profile-logout {
+  z-index: 303;
+	position: absolute;
+  padding: 1px;
+	height: 30px;
+	width: 30px;
+	right: 5px;
+	top: 5px;
+	background-color: #3B5998;
+  /*color: #1A1A1A;*/
+  color: white;
+  font-size: 12px;
+  font-weight: 200;
+  text-align: center;
+  line-height: 15px;
+	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+	cursor: pointer;
+}
 #profile-image {
   z-index: 302;
   position: absolute;
@@ -491,6 +611,32 @@ html {
   background-size: cover;
   background-repeat: no-repeat;
   image-orientation: from-image; /* Only works for Firefox */
+}
+#structure-user-tutorial {
+  z-index: 303;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  height: 50px;
+  /*width: 170px;*/
+  width: 50px;
+  border-radius: 25px;
+  background-color: white;
+}
+#structure-user-tutorial-text {
+  z-index: 304;
+  position: absolute;
+  top: 5px;
+  right: 60px;
+  height: 46px;
+  width: 110px;
+  /*width: 50px;*/
+  font-family: 'Open Sans Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 200;
+  text-align: right;
+  line-height: 18px;
+  visibility: hidden;
 }
 #structure-user {
   z-index: 303;

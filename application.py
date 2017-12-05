@@ -40,6 +40,7 @@ from app.ht_app_route import bp_test \
   , bp_app_skill_put \
   , bp_app_structure_query \
   , bp_app_structure_put \
+  , bp_app_structure_delete \
   , bp_app_structure_user_query \
   , bp_app_structure_user_put \
   , bp_app_repair_query \
@@ -87,6 +88,7 @@ application.register_blueprint(bp_app_skill_query)
 application.register_blueprint(bp_app_skill_put)
 application.register_blueprint(bp_app_structure_query)
 application.register_blueprint(bp_app_structure_put)
+application.register_blueprint(bp_app_structure_delete)
 application.register_blueprint(bp_app_structure_user_query)
 application.register_blueprint(bp_app_structure_user_put)
 application.register_blueprint(bp_app_repair_query)

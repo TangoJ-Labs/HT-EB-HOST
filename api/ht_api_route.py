@@ -129,6 +129,7 @@ def api_structure_query():
     query_response = util.structure_query(body)
     if query_response['result'] == 'success':
       response['structures'] = query_response['structures']
+      response['repair_settings'] = ht_references.repair_settings
       response['response'] = 'success'
   return jsonify(response)
 
@@ -164,7 +165,7 @@ def api_repair_query():
     query_response = util.repair_query(body)
     if query_response['result'] == 'success':
       response['repairs'] = query_response['repairs']
-      response['repair_settings'] = ht_references.repair_list
+      response['repair_settings'] = ht_references.repair_settings
       response['response'] = 'success'
     # Loop through the structure users and add the facebook data needed
     for uIndex, user in enumerate(body['structure']['users']):
