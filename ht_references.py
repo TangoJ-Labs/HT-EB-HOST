@@ -4,7 +4,7 @@ from boto3.dynamodb.conditions import Key, Attr
 from flask import Flask, send_from_directory, url_for
 from flask_assets import Bundle
 
-app_stage = 'prod' # prod, dev, local
+app_stage = 'local' # prod, dev, local
 
 app_state_name = 'prod'
 app_debug = False
@@ -111,6 +111,7 @@ table_user_conn_index = 'user_id-index'
 table_user_conn_target_index = 'target_user_id-index'
 table_skill_index = 'user_id-index'
 table_structure_index = 'status-timestamp-index'
+table_structure_user_index = 'status-timestamp-index'
 table_structure_user_index_structure = 'structure_id-timestamp-index'
 table_structure_user_index_user = 'user_id-timestamp-index'
 table_repair_index = 'structure_id-index'

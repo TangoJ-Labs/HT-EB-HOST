@@ -478,6 +478,14 @@ def structure_user_query(body):
     for structure_user in structure_user_response['Items']:
       if structure_user['status'] != 'deleted':
         found_structure_users.append(structure_user)
+  else:
+    # Recall the Structure data
+    structure_user_response = table_structure_user.query(
+      TableName=ht_references.table_structure_user_name
+      , IndexName=ht_references.table_structure_user_index
+      , KeyConditionExpression=Key('status').eq('active')
+    )
+    found_structure_users = structure_user_response['Items']
   print("STRUCTURE USER RESPONSE:")
   print(found_structure_users)
   return found_structure_users

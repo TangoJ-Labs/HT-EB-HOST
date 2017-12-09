@@ -34,6 +34,7 @@ var facebookName = '';
 var cognitoId = '';
 var serverToken = '';
 var previouslyLoggedIn = false;
+var showTutorial = true;
 
 var downloadingStructures = false;
 var downloadingSpots = false;
@@ -181,6 +182,7 @@ function tutorialScreen()
     {
       $('#tutorial-profile-text').css('visibility', 'hidden');
       $('#tutorial-screen').css('visibility', 'hidden');
+      tutorialMain();
       click = 0;
     }
   });
@@ -209,7 +211,7 @@ function cognitoLogin(fbResponse)
 
 function initMap()
 {
-  // console.log('MAP JS - MAP INIT');
+  console.log('MAP JS - MAP INIT');
   map = new google.maps.Map(document.getElementById('map'),
   {
     center: {lat: 29.758624, lng: -95.366795},
@@ -287,6 +289,7 @@ function initMap()
             // and signed request each expire
             var uid = response.authResponse.userID;
             var accessToken = response.authResponse.accessToken;
+            showTutorial = false;
             previouslyLoggedIn = true;
             // console.log(uid, accessToken);
             cognitoLogin(response);
@@ -296,13 +299,13 @@ function initMap()
             // the user is logged in to Facebook,
             // but has not authenticated your app
             // tutorialMain();
-            tutorialScreen();
+            // tutorialScreen();
           }
           else
           {
             // the user isn't logged in to Facebook.
             // tutorialMain();
-            tutorialScreen();
+            // tutorialScreen();
           }
        });
       }
@@ -322,7 +325,14 @@ function initMap()
        fjs.parentNode.insertBefore(js, fjs);
      }(document, 'script', 'facebook-jssdk'));
 
-     tutorialMain();
+     if (showTutorial)
+     {
+       tutorialScreen();
+     }
+     else
+     {
+        tutorialMain();
+     }
 
     // Register the click events
     $("#map-menu-button").click(function()
@@ -1729,8 +1739,8 @@ function requestStructures()
   // Record the download request
   downloadingStructures = true;
 
-  // console.log("REQUESTING STRUCTURE DATA");
-  // console.log('ENDPOINT STRUCTURES: ' + refs['endpoint_structure_query']);
+  console.log("REQUESTING STRUCTURE DATA");
+  console.log('ENDPOINT STRUCTURES: ' + refs['endpoint_structure_query']);
   var timestamp_begin = 0;
 
   var xhrHT = new XMLHttpRequest();
@@ -1755,7 +1765,7 @@ function requestStructures()
       // Indicate the download is complete
       downloadingStructures = false;
 
-      // console.log(xhrHT.responseText.toString());
+      console.log(xhrHT.responseText.toString());
       var jsonResponse = JSON.parse(xhrHT.responseText);
       // console.log(jsonResponse);
       repairSettings = jsonResponse.repair_settings;
