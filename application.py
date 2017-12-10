@@ -146,6 +146,12 @@ def root():
   # )
   return render_template('index.html', refs=ht_references.refs)
 
+@application.route('/info')
+# Return the old index page
+def info():
+  print("ROUTE: INFO")
+  return render_template('index.html', refs=ht_references.refs)
+
 @application.route('/map')
 # Return the map page
 def map():
@@ -153,7 +159,7 @@ def map():
   timestamp_begin = 0
   # Return all active Spots later than the passed timestamp (begin)
   spots = ht_lib_admin.spot_active(timestamp_begin)
-  print(spots)
+  # print(spots)
   return render_template('map.html', refs=ht_references.refs, spots=spots)
 
 @application.route('/tos')

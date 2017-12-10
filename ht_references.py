@@ -4,7 +4,7 @@ from boto3.dynamodb.conditions import Key, Attr
 from flask import Flask, send_from_directory, url_for
 from flask_assets import Bundle
 
-app_stage = 'local' # prod, dev, local
+app_stage = 'prod' # prod, dev, local
 
 app_state_name = 'prod'
 app_debug = False

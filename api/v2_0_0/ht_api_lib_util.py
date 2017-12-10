@@ -55,20 +55,26 @@ def cognito_id(body):
   return response
 
 def image_data(body):
+  print("IMAGE DATA:")
+  print(body)
   s3_object = ht_references.s3.Bucket(ht_references.folder_spot_image).Object(body['image_key'] + '.jpg')
   image_object = Image.open(BytesIO(s3_object.get()["Body"].read()))
 
   for orientation in ExifTags.TAGS.keys():
       if ExifTags.TAGS[orientation]=='Orientation':
           break
-  exif=dict(image_object._getexif().items())
+  exif = dict()
+  imgExif = image_object._getexif()
+  if imgExif is not None:
+      exif=dict(image_object._getexif().items())
 
-  if exif[orientation] == 3:
-      image_object=image_object.rotate(180, expand=True)
-  elif exif[orientation] == 6:
-      image_object=image_object.rotate(270, expand=True)
-  elif exif[orientation] == 8:
-      image_object=image_object.rotate(90, expand=True)
+      if orientation in exif:
+          if exif[orientation] == 3:
+              image_object=image_object.rotate(180, expand=True)
+          elif exif[orientation] == 6:
+              image_object=image_object.rotate(270, expand=True)
+          elif exif[orientation] == 8:
+              image_object=image_object.rotate(90, expand=True)
 #   image64 = b64encode(image_object)
   image_buffer = BytesIO()
   image_object.save(image_buffer, format="JPEG")
@@ -80,6 +86,7 @@ def image_data(body):
   params = {'Bucket': 'harvey-media','Key': body['image_key'] + '.jpg'}
   url = ht_references.s3_client.generate_presigned_url('get_object', Params=params, ExpiresIn=86400, HttpMethod='GET')
   response['image_url'] = url
+  print(response)
   return response
 
 def user_query_active(body):

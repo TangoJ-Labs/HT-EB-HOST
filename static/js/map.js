@@ -739,6 +739,7 @@ function initMap()
   {
     // console.log("REPAIR CLICKED");
     var repairClicked = $(this).data("repair");
+    // console.log(repairClicked);
     var repairStageHtml = $(this).find('.repair-stage').clone();
     var repairIconHtml = $(this).find('img').clone();
 
@@ -751,7 +752,8 @@ function initMap()
     var repairTitleInteriorHtml = repairStageHtml[0].outerHTML +
       '<div class="repair-detail">' +
         repairIconHtml[0].outerHTML +
-        '<div class="repair-title">' + repairClicked + '</div>' +
+        // '<div class="repair-title">' + repairClicked + '</div>' +
+        '<div class="repair-title">' + repairSettings.types[repairClicked]['title'] + '</div>' +
         '<div class="repair-exit">&#x2715;</div>' +
       '</div>'
       $('#repair-container-sub-header').append(repairTitleInteriorHtml);
@@ -1229,6 +1231,7 @@ function addStructures()
   structureMarkers = [];
   filteredStructures = [];
 
+  // console.log(allStructures.length);
   for (i = 0; i < allStructures.length; i++)
   {
     // Only add the entity if the timestamp is newer than the current filter setting
@@ -1250,6 +1253,7 @@ function addMarkerForStructure(structure)
   // NOTE:  No need to check the time filter - the timestamp should already have been checked before this function is called
 
   // console.log("ADDING STRUCTURE MARKER");
+  // console.log(structure);
   // Check whether the structure has a repair that matches the user's skill (if logged in)
   // Reset the skill match toggle variable
   structureMatch = false;
