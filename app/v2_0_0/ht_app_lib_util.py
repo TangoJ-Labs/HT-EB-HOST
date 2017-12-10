@@ -349,8 +349,6 @@ def structure_query(body):
       , IndexName=ht_references.table_structure_index
       , KeyConditionExpression=Key('status').eq('active')
     )
-  print("STRUCTURE QUERY RESPONSE:")
-  print(structure_response)
   if len(structure_response['Items']) > 0:
     response['result'] = 'success'
     structure_dict = []
@@ -367,12 +365,20 @@ def structure_query(body):
         , 'structure_id' : structure['structure_id']
       }
       structure_user_response = structure_user_query(structure_user_body)
-      if len(structure_user_response) == 0:
-        response['result'] = 'failure'
-      else:
+      if len(structure_user_response) > 0:
         structure['users'] = structure_user_response
         structure_dict.append(structure)
-    response['structures'] = structure_dict
+    if len(structure_dict) > 0:
+      response['structures'] = structure_dict
+    else:
+      response['result'] = 'failure'
+    #   structure_user_response = structure_user_query(structure_user_body)
+    #   if len(structure_user_response) == 0:
+    #     response['result'] = 'failure'
+    #   else:
+    #     structure['users'] = structure_user_response
+    #     structure_dict.append(structure)
+    # response['structures'] = structure_dict
   return response
 
 def structure_put(body):
@@ -443,11 +449,7 @@ def structure_delete(body):
   )
   if put_structure_response['ResponseMetadata']['HTTPStatusCode'] == 200:
     # Now change any StructureUser entries to 'deleted'
-    print("STRUCTURE USER DELETE BODY:")
-    print(body)
     structureUserResponse = structure_user_put(body)
-    print("STRUCTURE USER DELETE RESPONSE:")
-    print(structureUserResponse)
     if structureUserResponse['response'] == 'success':
       response['response'] = 'success'
   return response
@@ -486,8 +488,6 @@ def structure_user_query(body):
       , KeyConditionExpression=Key('status').eq('active')
     )
     found_structure_users = structure_user_response['Items']
-  print("STRUCTURE USER RESPONSE:")
-  print(found_structure_users)
   return found_structure_users
 
 def structure_user_put(body):

@@ -212,12 +212,13 @@ def structure_query(body):
         'structure_id' : structure['structure_id']
       }
       structure_user_response = structure_user_query(structure_user_body)
-      if len(structure_user_response) == 0:
-        response['result'] = 'failure'
-      else:
+      if len(structure_user_response) > 0:
         structure['users'] = structure_user_response
         structure_dict.append(structure)
-    response['structures'] = structure_dict
+    if len(structure_dict) > 0:
+      response['structures'] = structure_dict
+    else:
+      response['result'] = 'failure'
   return response
 
 def structure_user_query(body):
@@ -239,6 +240,14 @@ def structure_user_query(body):
       TableName=ht_references.table_structure_user_name
       , IndexName=ht_references.table_structure_user_index_user
       , KeyConditionExpression=Key('user_id').eq(body['user_id'])
+    )
+    found_structure_users = structure_user_response['Items']
+  else:
+    # Recall the Structure data
+    structure_user_response = table_structure_user.query(
+      TableName=ht_references.table_structure_user_name
+      , IndexName=ht_references.table_structure_user_index
+      , KeyConditionExpression=Key('status').eq('active')
     )
     found_structure_users = structure_user_response['Items']
   return found_structure_users

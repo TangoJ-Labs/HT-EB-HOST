@@ -37,9 +37,9 @@ if app_stage == 'dev':
 elif app_stage == 'local':
   app_state_name = 'dev'
   app_debug = True
-  # domain = 'http://0.0.0.0:5000/'
+  domain = 'http://0.0.0.0:5000/'
   # domain = 'http://127.0.0.1:5000/'
-  domain = 'http://192.168.1.7:5000/'
+  # domain = 'http://192.168.1.7:5000/'
 
 # folder_spot_image = 'https://s3.amazonaws.com/harvey-media/'
 folder_spot_image = 'harvey-media'

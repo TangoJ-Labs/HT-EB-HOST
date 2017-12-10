@@ -1739,8 +1739,8 @@ function requestStructures()
   // Record the download request
   downloadingStructures = true;
 
-  console.log("REQUESTING STRUCTURE DATA");
-  console.log('ENDPOINT STRUCTURES: ' + refs['endpoint_structure_query']);
+  // console.log("REQUESTING STRUCTURE DATA");
+  // console.log('ENDPOINT STRUCTURES: ' + refs['endpoint_structure_query']);
   var timestamp_begin = 0;
 
   var xhrHT = new XMLHttpRequest();
@@ -1765,7 +1765,7 @@ function requestStructures()
       // Indicate the download is complete
       downloadingStructures = false;
 
-      console.log(xhrHT.responseText.toString());
+      // console.log(xhrHT.responseText.toString());
       var jsonResponse = JSON.parse(xhrHT.responseText);
       // console.log(jsonResponse);
       repairSettings = jsonResponse.repair_settings;
@@ -1877,7 +1877,7 @@ function requestRepairsForStructure(structure)
                           '">' + jsonResponse.repair_settings.stages[jsonResponse.repairs[r].stage]['title'] + '</div>' +
                         '<div class="repair-detail">' +
                           '<img border="0" src="img/repairs/' + jsonResponse.repair_settings.types[repair].image + '" class="repair-icon">' +
-                          '<div class="repair-title">' + jsonResponse.repairs[r].repair + '</div>' +
+                          '<div class="repair-title">' + jsonResponse.repair_settings.types[repair]['title'] + '</div>' +
                           '<div class="repair-arrow">&#x203A;</div>' +
                         '</div>' +
                       '</div>'
