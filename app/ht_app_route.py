@@ -331,7 +331,6 @@ def app_spot_query_active():
     response['spot'] = mapdata.spot_query_active(body)
     response['spot_request'] = mapdata.spot_request_query_active(body)
     response['response'] = 'success'
-  print(response)
   return jsonify(response)
 
 # PUT SPOT DATA
@@ -483,10 +482,6 @@ def app_test():
     , IndexName=table_hazard_index
     , KeyConditionExpression=Key('status').eq('active')
   )
-  print("HAZARD RESPONSE:")
-  print(hazard_response['Items'])
-  print("HAZARD RESPONSE JSONIFY:")
-  print(jsonify(hazard_response['Items']))
   # json_conv = json_util.loads(hazard_response['Items'])
   # db_dict = dict(hazard_response['Items'])
   # print("HAZARD RESPONSE DICT:")

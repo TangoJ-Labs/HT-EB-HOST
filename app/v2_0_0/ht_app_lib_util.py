@@ -32,7 +32,7 @@ def app_settings():
 
 def app_login(body):
   print("LOGIN")
-  print(body)
+  # print(body)
   # Create the boto3 resource object with the passed credentials
   resource = ht_lib_admin.get_resource_with_credentials(body['identity_id'], body['login_provider'], body['login_token'], 'dynamodb', 'us-east-1')
   response = {}
@@ -178,7 +178,6 @@ def user_update(body):
   resource = ht_lib_admin.get_resource_with_credentials(body['identity_id'], body['login_provider'], body['login_token'], 'dynamodb', 'us-east-1')
   # Create a default response
   response = 'failure'
-  print('USER UPDATE - CHECK 1')
   # Recall the requested User
   user_data = {}
   table_user = resource.Table(ht_references.table_user_name)
@@ -187,7 +186,6 @@ def user_update(body):
     , KeyConditionExpression=Key('user_id').eq(body['user_id'])
   )
   if len(user_response['Items']) > 0:
-    print('USER UPDATE - CHECK 2')
     user_data = {
       'user_id' : body['user_id']
       , 'facebook_id' : user_response['Items'][0]['facebook_id']
@@ -198,7 +196,6 @@ def user_update(body):
 
     # Update whatever new values were sent (keep the original timestamp and user_id)
     if 'facebook_id' in body:
-      print('USER UPDATE - CHECK 3')
       user_data['facebook_id'] = body['facebook_id']
     if 'type' in body:
       user_data['type'] = body['type']
@@ -211,7 +208,6 @@ def user_update(body):
       Item=user_data
     )
     if create_user_response['ResponseMetadata']['HTTPStatusCode'] == 200:
-      print('USER UPDATE - CHECK 4')
       response = 'success'
     return response
 
@@ -335,7 +331,6 @@ def structure_query(body):
   # If a structure id was passed, only return the specific structure data, otherwise
   # return all active structure data
   table_structure = resource.Table(ht_references.table_structure_name)
-  print(body)
   if 'structure_id' in body:
     # Recall the Structure data
     structure_response = table_structure.query(
@@ -552,8 +547,6 @@ def repair_query(body):
 def repair_put(body):
   # Create the boto3 resource object with the passed credentials
   resource = ht_lib_admin.get_resource_with_credentials(body['identity_id'], body['login_provider'], body['login_token'], 'dynamodb', 'us-east-1')
-  print("REPAIR PUT:")
-  print(body)
 
   # Create a default response
   response = {'response' : 'failure'}
@@ -606,11 +599,7 @@ def repair_put(body):
           repair_image_response = 'failure'
 
     # Loop through the updated / new repair images and add the data to the RepairImage db
-    print("REPAIR IMAGES:")
-    print(body['repair_images'])
     for repair_image in body['repair_images']:
-      print("REPAIR IMAGE UPDATE:")
-      print(repair_image)
       repair_image_data = {
         'image_id' : repair_image['image_id']
         , 'repair_id' : repair_image['repair_id']
@@ -623,8 +612,6 @@ def repair_put(body):
       )
       if put_repair_image_response['ResponseMetadata']['HTTPStatusCode'] != 200:
         repair_image_response = 'failure'
-        print(repair_image_response)
   if put_repair_response['ResponseMetadata']['HTTPStatusCode'] == 200 and repair_image_response == 'success':
     response['response'] = 'success'
-  print(response)
   return response

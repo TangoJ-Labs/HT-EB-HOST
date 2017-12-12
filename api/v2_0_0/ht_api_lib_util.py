@@ -55,8 +55,8 @@ def cognito_id(body):
   return response
 
 def image_data(body):
-  print("IMAGE DATA:")
-  print(body)
+  # print("IMAGE DATA:")
+  # print(body)
   s3_object = ht_references.s3.Bucket(ht_references.folder_spot_image).Object(body['image_key'] + '.jpg')
   image_object = Image.open(BytesIO(s3_object.get()["Body"].read()))
 
@@ -86,7 +86,6 @@ def image_data(body):
   params = {'Bucket': 'harvey-media','Key': body['image_key'] + '.jpg'}
   url = ht_references.s3_client.generate_presigned_url('get_object', Params=params, ExpiresIn=86400, HttpMethod='GET')
   response['image_url'] = url
-  print(response)
   return response
 
 def user_query_active(body):
@@ -121,8 +120,8 @@ def user_query(user_id):
   # RETURN A SINGLE USER - NOT A LIST
   if len(user_response['Items']) > 0:
     fb_profile_response = urllib2.urlopen('https://www.facebook.com/app_scoped_user_id/' + user_response['Items'][0]['facebook_id'])
-    print("USER GET URL:")
-    print(fb_profile_response.geturl())
+    # print("USER GET URL:")
+    # print(fb_profile_response.geturl())
     user_response['Items'][0]['user_fb_url'] = fb_profile_response.geturl()
     response = user_response['Items'][0]
   return response

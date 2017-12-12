@@ -52,9 +52,6 @@ def spot_query_active(body):
   return response
 
 def spot_content_query(body):
-  print(body)
-  print('SPOT CONTENT QUERY FOR SPOT:')
-  print(body['spot_id'])
   # Retrieve the Spot Content data for the passed Spot
   table_spot_content = ht_references.dynamo.Table(ht_references.table_spot_content_name)
   spot_content_response = table_spot_content.query(

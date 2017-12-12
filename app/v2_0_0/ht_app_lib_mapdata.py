@@ -113,7 +113,7 @@ def spot_put(body):
     spot_req_lat_r = radians(spot_request['lat'])
     spot_req_lng_r = radians(spot_request['lng'])
     c_dist = coord_dist(spot_lat_r, spot_lng_r, spot_req_lat_r, spot_req_lng_r)
-    print(c_dist)
+    # print(c_dist)
     # Distance criteria should match app Spot circle radius (converted to km)
     if c_dist <= 0.05:
       # Change the SpotRequest status to 'filled'

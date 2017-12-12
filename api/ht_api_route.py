@@ -156,7 +156,6 @@ def api_repair_query():
   print("ROUTE: API - REPAIR QUERY")
   # Retrieve the POST json parameters
   body = request.get_json(force=True)
-  print(body)
   # Prep the response and fire the appropriate version of the function
   response = {'response' : 'failure'}
   if 'app_version' in body:
@@ -170,15 +169,9 @@ def api_repair_query():
     # Loop through the structure users and add the facebook data needed
     for uIndex, user in enumerate(body['structure']['users']):
       updated_user_data = util.user_query(user['user_id'])
-      print("REPAIR QUERY OLD USER:")
-      print(body['structure']['users'][uIndex])
-      print("REPAIR QUERY UPDATED USER:")
-      print(updated_user_data)
       body['structure']['users'][uIndex] = updated_user_data
     # Return the updated data
     response['request'] = body
-    print("REPAIR QUERY REQUEST RETURN:")
-    print(response['request'])
   return jsonify(response)
 
 # RECALL THE SPOT DATA
@@ -192,8 +185,6 @@ def api_spot_query_active():
   response = {'response' : 'failure'}
   if 'app_version' in body:
     app_version_mod = body['app_version'].replace('.', '_')
-    print(app_version_mod)
-    print('..v' + app_version_mod + '.ht_api_lib_mapdata')
     mapdata = importlib.import_module('..v' + app_version_mod + '.ht_api_lib_mapdata', 'api.subpkg')
     response['spots'] = mapdata.spot_query_active(body)
     response['spot_requests'] = mapdata.spot_request_query_active(body)
@@ -211,8 +202,6 @@ def api_spot_content_query():
   response = {'response' : 'failure'}
   if 'app_version' in body:
     app_version_mod = body['app_version'].replace('.', '_')
-    print(app_version_mod)
-    print('..v' + app_version_mod + '.ht_api_lib_mapdata')
     mapdata = importlib.import_module('..v' + app_version_mod + '.ht_api_lib_mapdata', 'api.subpkg')
     response['spot_content'] = mapdata.spot_content_query(body)
     response['response'] = 'success'
@@ -303,10 +292,6 @@ def api_test():
     , IndexName=table_hazard_index
     , KeyConditionExpression=Key('status').eq('active')
   )
-  print("HAZARD RESPONSE:")
-  print(hazard_response['Items'])
-  print("HAZARD RESPONSE JSONIFY:")
-  print(jsonify(hazard_response['Items']))
   # json_conv = json_util.loads(hazard_response['Items'])
   # db_dict = dict(hazard_response['Items'])
   # print("HAZARD RESPONSE DICT:")

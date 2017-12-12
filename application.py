@@ -144,7 +144,11 @@ def root():
   #   , IndexName="status-index"
   #   , KeyConditionExpression=Key('status').eq('active')
   # )
-  return render_template('index.html', refs=ht_references.refs)
+  # return render_template('index.html', refs=ht_references.refs)
+  timestamp_begin = 0
+  # Return all active Spots later than the passed timestamp (begin)
+  spots = ht_lib_admin.spot_active(timestamp_begin)
+  return render_template('map.html', refs=ht_references.refs, spots=spots)
 
 @application.route('/info')
 # Return the old index page
