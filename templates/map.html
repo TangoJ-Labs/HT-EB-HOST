@@ -52,7 +52,7 @@
       {% assets "map_js" %}
 				<script type="text/javascript" src="{{ ASSET_URL }}"></script>
 			{% endassets %}
-      <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALZxdVgCtAFhp2V4SvSQKgw8_sVOzBdQU&callback=initMap" async defer></script>
+      <script src="https://maps.googleapis.com/maps/api/js?key={{ refs.map_key }}&callback=initMap" async defer></script>
 			<!-- <script type="text/javascript" src="{{ url_for('static',filename='gen/index.js') }}"></script> -->
 			<script type="text/javascript">
 				passRefs({{ refs|tojson }});

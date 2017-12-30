@@ -126,7 +126,7 @@ async function bannerReturn()
 }
 async function tutorialMain()
 {
-  // console.log("SHOW TUTORIAL");
+  // console.log("SHOW TUTORIAL MAIN");
   await sleep(2000);
   $('#banner').animate({
     'top': '0px'
@@ -211,7 +211,7 @@ function cognitoLogin(fbResponse)
 
 function initMap()
 {
-  console.log('MAP JS - MAP INIT');
+  // console.log('MAP JS - MAP INIT');
   map = new google.maps.Map(document.getElementById('map'),
   {
     center: {lat: 29.758624, lng: -95.366795},
@@ -299,13 +299,13 @@ function initMap()
             // the user is logged in to Facebook,
             // but has not authenticated your app
             // tutorialMain();
-            // tutorialScreen();
+            tutorialScreen();
           }
           else
           {
             // the user isn't logged in to Facebook.
             // tutorialMain();
-            // tutorialScreen();
+            tutorialScreen();
           }
        });
       }
@@ -313,6 +313,9 @@ function initMap()
       {
         console.log("FB LOGIN STATUS CHECK ERROR:");
         console.log(e);
+
+        // tutorialMain();
+        tutorialScreen();
       }
     };
 
@@ -323,16 +326,35 @@ function initMap()
        js = d.createElement(s); js.id = id;
        js.src = "https://connect.facebook.net/en_US/sdk.js";
        fjs.parentNode.insertBefore(js, fjs);
-     }(document, 'script', 'facebook-jssdk'));
+    }(document, 'script', 'facebook-jssdk'));
 
-     if (showTutorial)
-     {
-       tutorialScreen();
-     }
-     else
-     {
-        tutorialMain();
-     }
+    // var trackingEnabled = false;
+    // $(function()
+    // {
+    //   $('<img/>')
+    //     .attr("src", "//apps.facebook.com/favicon.ico")
+    //     .load(function()
+    //     {
+    //       // If image is reached, tracking is enabled
+    //       trackingEnabled = true;
+    //       showTutorial = false;
+    //     })
+    //     .css("display", "none")
+    //     .appendTo(document.body);
+    // });
+    // console.log("TRACKING ENABLED:");
+    // console.log(trackingEnabled);
+    //
+    // console.log("SHOW TUTORIAL?");
+    // console.log(showTutorial);
+    // if (showTutorial)
+    // {
+    //   tutorialScreen();
+    // }
+    // else
+    // {
+    //    tutorialMain();
+    // }
 
     // Register the click events
     $("#map-menu-button").click(function()

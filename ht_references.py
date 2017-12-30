@@ -31,15 +31,18 @@ route_api_admin_update_spot_content = 'api/v0.1/admin/update/spot_content'
 # ENSURE THE NON-API URLs INCLUDE A SLASH AT THE END
 domain = 'https://www.harveytown.org/'
 # domain = 'http://harvey.us-east-1.elasticbeanstalk.com/'
+map_key = 'AIzaSyBI6QYKhGOcJ3Ec7XF875c7NSh4u4VDtW8'
 if app_stage == 'dev':
   app_state_name = 'dev'
   domain = ''
+  map_key = 'AIzaSyALZxdVgCtAFhp2V4SvSQKgw8_sVOzBdQU'
 elif app_stage == 'local':
   app_state_name = 'dev'
   app_debug = True
-  domain = 'http://0.0.0.0:5000/'
+  # domain = 'http://0.0.0.0:5000/'
   # domain = 'http://127.0.0.1:5000/'
-  # domain = 'http://192.168.1.7:5000/'
+  domain = 'http://192.168.0.13:5000/'
+  map_key = 'AIzaSyALZxdVgCtAFhp2V4SvSQKgw8_sVOzBdQU'
 
 # folder_spot_image = 'https://s3.amazonaws.com/harvey-media/'
 folder_spot_image = 'harvey-media'
@@ -246,6 +249,7 @@ bundles = {
 ##### COMPILE THE REFS DICT #####
 refs = {'app_stage' : app_stage
   , 'domain' : domain
+  , 'map_key' : map_key
   , 'folder_spot_image' : folder_spot_image
   , 'endpoint_cognito_id' : endpoint_cognito_id
   , 'endpoint_image_data' : endpoint_image_data
