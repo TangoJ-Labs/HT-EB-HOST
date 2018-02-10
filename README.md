@@ -1,5 +1,7 @@
 # HT-EB-HOST
 
+Sibling repo for the iOS app: https://github.com/TangoJ-Labs/Harvey
+
 **UPDATE: As of February 2018, Harveytown is no longer actively running on either the website or iOS app.**
 
 HT-EB-HOST is the Flask package for the website "Harveytown" (formerly hosted at https://www.harveytown.org).
